@@ -24,7 +24,7 @@ import { useBottomPadding } from '../safeArea'
 export default function Language() {
 	// Read per-render, never at module scope -- see docs/porting-rules.md rule 1.
 	const { Page } = components
-	const { ScrollView, View } = ReactNative
+	const { ScrollView } = ReactNative
 	const {
 		Stack,
 		Text,

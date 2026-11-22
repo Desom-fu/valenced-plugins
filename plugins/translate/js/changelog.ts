@@ -3,6 +3,14 @@ import type { ChangelogEntry } from '../shared/changelog'
 /** Newest first. Every version users got gets an entry; see shared/changelog.tsx. */
 export const CHANGELOG: ChangelogEntry[] = [
 	{
+		version: '0.6.5',
+		date: '2026-11-23',
+		title: 'Valenced port',
+		changes: [
+			'Moved to the Valenced plugin API (was Revenge Next), with no change in behaviour.',
+		],
+	},
+	{
 		version: '0.6.4',
 		date: '2026-10-23',
 		title: 'Discord version limit removed',
