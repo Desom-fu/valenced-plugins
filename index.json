@@ -1,0 +1,31 @@
+{
+  "format": 1,
+  "name": "Valenced Plugins by Desom-fu",
+  "description": "Translate for Valenced, ported from Revenge Next.",
+  "plugins": {
+    "bleelblep.translate": {
+      "name": "Translate",
+      "description": "Translate messages in place with a long-press, using free services. No key or account needed.",
+      "author": "bleelblep",
+      "icon": "GlobeEarthIcon",
+      "channels": {
+        "latest": "0.6.4"
+      },
+      "versions": {
+        "0.6.4": {
+          "url": "https://desom-fu.github.io/valenced-plugins/pool/bleelblep.translate@0.6.4.zip",
+          "sha256": "289aef8b0caf6f34ad5e029c8d1f4cbbd4441ceefdd77127ee3db0b152915ac1",
+          "size": 14452,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    }
+  }
+}
