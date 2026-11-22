@@ -9,13 +9,26 @@
       "author": "bleelblep",
       "icon": "GlobeEarthIcon",
       "channels": {
-        "latest": "0.6.4"
+        "latest": "0.6.5"
       },
       "versions": {
         "0.6.4": {
           "url": "https://desom-fu.github.io/valenced-plugins/pool/bleelblep.translate@0.6.4.zip",
           "sha256": "289aef8b0caf6f34ad5e029c8d1f4cbbd4441ceefdd77127ee3db0b152915ac1",
           "size": 14452,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "0.6.5": {
+          "url": "https://desom-fu.github.io/valenced-plugins/pool/bleelblep.translate@0.6.5.zip",
+          "sha256": "6e6ae8c59a699165f16f1ce1cb782ec5fab51842dc19c18232bc8b2471a43651",
+          "size": 14487,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
