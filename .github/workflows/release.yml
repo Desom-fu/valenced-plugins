@@ -1,0 +1,65 @@
+# A plugin is released when the published pool doesn't have `<id>@<version>.zip` for its manifest version.
+# The pool contains all relevant data. Git tags and GitHub releases are created for changelogs only.
+#
+# This repository holds JS-only plugins, so the release path is the Valenced plugin CLI alone:
+# no JDK, no Android SDK, and no `READ_PACKAGES_TOKEN`. The template's Gradle job is only needed for
+# native (`src/main`) plugins, which would have to download the Valenced API from GitHub Packages.
+
+name: Release plugins
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: publish-pool
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  # Branch holding the pool. Set the POOL_BRANCH repository variable to move it.
+  POOL_BRANCH: ${{ vars.POOL_BRANCH }}
+  # Set the PAGES_BASE_URL repository variable when the pool is served from a custom domain.
+  PAGES_BASE_URL: ${{ vars.PAGES_BASE_URL }}
+  POOL_REMOTE: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
+  PLAN: ${{ github.workspace }}/releases.json
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Existing tags, so a re-run doesn't try to recreate one.
+
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun install
+
+      - name: Check out the published pool
+        run: .github/scripts/checkout-pool.sh
+
+      - name: Plan releases
+        id: plan
+        run: .github/scripts/plan-releases.sh
+
+      - name: Build JS bundles
+        if: steps.plan.outputs.count != '0'
+        run: bun run build
+
+      - name: Package planned plugins
+        if: steps.plan.outputs.count != '0'
+        run: python3 .github/scripts/package.py
+
+      - name: Publish to the pool
+        if: steps.plan.outputs.count != '0'
+        run: .github/scripts/publish-pool.sh
+
+      - name: Tag and write changelogs
+        if: steps.plan.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: .github/scripts/tag-releases.sh

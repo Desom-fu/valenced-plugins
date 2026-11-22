@@ -1,0 +1,59 @@
+# PR build validation
+#
+# JS-only plugins, so there is no Gradle step and no `READ_PACKAGES_TOKEN` to protect. The whole
+# check runs on the pull request's own code: type-check, build, package, and generate an index from
+# the result. `pull_request` (not `pull_request_target`) means fork PRs get no repository secrets.
+
+name: Validate
+
+on:
+  pull_request:
+    paths:
+      - 'plugins/**'
+      - 'themes/**'
+      - '.github/**'
+      - 'repo.config.json'
+      - 'package.json'
+      - 'bun.lock'
+      - 'tsconfig.json'
+      - 'tsconfig.base.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun install
+
+      - name: Lint the workflow scripts
+        run: shellcheck .github/scripts/*.sh
+
+      - name: Type-check every plugin
+        run: bun run lint:types
+
+      - name: Lint and format check
+        run: bun run lint
+
+      - name: Build JS bundles
+        run: bun run build
+
+      - name: Package into build/dist
+        run: |
+          mkdir -p pool
+          bun run plan-releases --pool ./pool --out releases.json
+          python3 .github/scripts/package.py
+
+      - name: Generate index from built artifacts
+        run: |
+          bun run generate-index \
+            --dist build/dist \
+            --base-url https://valenced.local \
+            --out /tmp/index.json
+          cat /tmp/index.json

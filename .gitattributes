@@ -1,0 +1,12 @@
+# Normalise every text file to LF so the bundles, the index digests and shellcheck see the same
+# bytes on every machine. Windows checkouts would otherwise get CRLF and inject it into the output.
+* text=auto eol=lf
+
+# Binaries must never be normalised.
+*.jar binary
+*.zip binary
+*.png binary
+*.webp binary
+*.jpg binary
+*.jpeg binary
+*.ttf binary

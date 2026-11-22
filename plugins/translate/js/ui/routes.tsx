@@ -1,0 +1,62 @@
+import * as modulesSettings from '@valenced/discord/modules/settings'
+import Appearance from './pages/Appearance'
+import Debug from './pages/Debug'
+import Language from './pages/Language'
+import Service from './pages/Service'
+
+const DEBUG: boolean = false
+
+const PREFIX = 'bleelblep.translate'
+
+export const LANGUAGE_ROUTE = `${PREFIX}.language`
+export const SERVICE_ROUTE = `${PREFIX}.service`
+export const APPEARANCE_ROUTE = `${PREFIX}.appearance`
+export const DEBUG_ROUTE = `${PREFIX}.debug`
+
+/**
+ * Upstream commit 10371ff merged `refreshSettingsNavigator` + `refreshSettingsOverviewScreen`
+ * into `refreshSettings`. Which exists depends on the bundle the user is running.
+ */
+function refreshSettingsUI() {
+	const settings = modulesSettings as any
+	if (typeof settings.refreshSettings === 'function') {
+		settings.refreshSettings()
+		return
+	}
+	settings.refreshSettingsNavigator?.()
+	settings.refreshSettingsOverviewScreen?.()
+}
+
+export function registerPages(): () => void {
+	const { registerSettingsItem, onSettingsModulesLoaded } = modulesSettings
+
+	const route = (key: string, title: string, component: any) =>
+		registerSettingsItem(key, {
+			parent: null,
+			type: 'route',
+			useTitle: () => title,
+			screen: { route: key, getComponent: () => component },
+		})
+
+	// Registered inside `onSettingsModulesLoaded`: it fires immediately when Discord's
+	// settings modules are already loaded, and waits when they are not. Registering
+	// before they exist is how a page ends up missing until the app is restarted.
+	let unregister: Array<() => void> = []
+	const unsubscribe = onSettingsModulesLoaded(() => {
+		unregister = [
+			route(LANGUAGE_ROUTE, 'Translate into', Language),
+			route(SERVICE_ROUTE, 'Service', Service),
+			route(APPEARANCE_ROUTE, 'Appearance', Appearance),
+			...(DEBUG ? [route(DEBUG_ROUTE, 'Debug', Debug)] : []),
+		]
+
+		refreshSettingsUI()
+	})
+
+	return () => {
+		unsubscribe()
+		for (const remove of unregister) remove()
+		unregister = []
+		refreshSettingsUI()
+	}
+}

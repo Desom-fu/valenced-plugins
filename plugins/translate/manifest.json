@@ -1,0 +1,20 @@
+{
+	"format": 1,
+	"id": "bleelblep.translate",
+	"name": "Translate",
+	"description": "Translate messages in place with a long-press, using free services. No key or account needed.",
+	"author": "bleelblep",
+	"icon": "GlobeEarthIcon",
+	"version": "0.6.4",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": "*"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}
