@@ -7,6 +7,7 @@ import { DEFAULTS } from '../../defaults'
 import { describeCode } from '../../lib/languages'
 import { providerById } from '../../lib/providers'
 import { sweepNow } from '../../patches/autoTranslate'
+import { composerStatus } from '../../patches/composerBar'
 import { rowIcon } from '../icon'
 import {
 	AI_ROUTE,
@@ -111,7 +112,11 @@ export default function Settings({
 						/>
 						<TableSwitchRow
 							label="Translate button in the chat bar"
-							subLabel="A button left of send. Tap it to translate what you have typed; hold it to pick the language for this message."
+							subLabel={
+								s.composerButton && !composerStatus().row
+									? 'On — but the chat bar row was not found in this Discord build, so there is nothing to draw it in. Open the chat once; if this stays, the build moved the component.'
+									: 'A button left of send. Tap it to translate what you have typed; hold it to pick the language for this message.'
+							}
 							icon={rowIcon('GlobeEarthIcon')}
 							value={!!s.composerButton}
 							onValueChange={value => set({ composerButton: value })}

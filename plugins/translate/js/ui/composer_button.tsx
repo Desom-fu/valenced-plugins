@@ -26,6 +26,7 @@
 import * as assets from '@valenced/assets'
 import * as actions from '@valenced/discord/actions'
 import { Design } from '@valenced/discord/design'
+import { lookupGeneratedIconComponent } from '@valenced/utils/discord'
 import * as React from 'react'
 import * as ReactNative from 'react-native'
 import {
@@ -40,6 +41,54 @@ import { settings } from '../lib/state'
 const BUTTON_SIZE = 32
 
 /**
+ * The icon, resolved the same way the settings rows resolve theirs.
+ *
+ * `getAssetIdByName('GlobeEarthIcon')` returns `0` on a build where that name is not a registry
+ * asset, and a `TableRowIcon` with no source draws nothing — a 32dp invisible tap target, which
+ * reads as "the button is missing" rather than as an icon lookup miss. So the generated-component
+ * path is tried too, and a plain text glyph is the last resort: something visible always ships.
+ */
+function buttonGlyph(): any {
+	const { TableRowIcon, Text } = Design as any
+	const { getAssetIdByName } = assets as any
+	const lookupComponent = lookupGeneratedIconComponent as any
+
+	const Icon = TableRowIcon ?? (Design as any).TableRow?.Icon
+
+	const source = (() => {
+		try {
+			return getAssetIdByName?.('GlobeEarthIcon') || undefined
+		} catch {
+			return undefined
+		}
+	})()
+
+	if (source && Icon) return React.createElement(Icon, { source })
+
+	const Component = (() => {
+		try {
+			return lookupComponent?.('GlobeEarthIcon')
+		} catch {
+			return undefined
+		}
+	})()
+	if (Component) return React.createElement(Component, null)
+
+	if (Text) {
+		return React.createElement(
+			Text,
+			{
+				color: 'text-default',
+				variant: 'text-md/semibold',
+				style: { lineHeight: BUTTON_SIZE, textAlign: 'center' },
+			},
+			'A文',
+		)
+	}
+	return null
+}
+
+/**
  * The button.
  *
  * `useSyncExternalStore` so the picker, which lives in a sheet outside this tree, can change the
@@ -52,8 +101,6 @@ export function ComposerTranslateButton(): any {
 	const [busy, setBusy] = React.useState(false)
 
 	const { Pressable } = ReactNative
-	const { TableRowIcon } = Design as any
-	const { getAssetIdByName } = assets as any
 
 	const language = target ?? settings().target
 
@@ -68,8 +115,6 @@ export function ComposerTranslateButton(): any {
 	const onLongPress = React.useCallback(() => {
 		openLanguagePicker(language)
 	}, [language])
-
-	const source = getAssetIdByName?.('GlobeEarthIcon')
 
 	return React.createElement(
 		Pressable,
@@ -87,9 +132,7 @@ export function ComposerTranslateButton(): any {
 				width: BUTTON_SIZE,
 			},
 		},
-		source && TableRowIcon
-			? React.createElement(TableRowIcon, { source })
-			: null,
+		buttonGlyph(),
 	)
 }
 

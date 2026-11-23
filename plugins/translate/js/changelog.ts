@@ -3,6 +3,18 @@ import type { ChangelogEntry } from '../shared/changelog'
 /** Newest first. Every version users got gets an entry; see shared/changelog.tsx. */
 export const CHANGELOG: ChangelogEntry[] = [
 	{
+		version: '0.7.1',
+		date: '2026-11-23',
+		title: 'The chat bar button actually appears',
+		changes: [
+			'The chat bar button was missing on every build: the row it belongs to is a memo component, and the lookup matched on a name a memo does not carry, so nothing was ever found. It is now matched the way other plugins match that same component.',
+			'The lookup also waits for the component to initialise instead of checking once early and giving up.',
+			'Turning the switch on now shows the button straight away, without reopening the chat.',
+			'If a future build moves that row, the settings page says so instead of the button just being absent.',
+			'The button falls back to a visible glyph when the icon name is not a registry asset on your build, instead of drawing an invisible 32dp target.',
+		],
+	},
+	{
 		version: '0.7.0',
 		date: '2026-11-23',
 		title: 'Your own model, and a button in the chat bar',
