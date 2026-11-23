@@ -12,9 +12,14 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import {
 	attachComposer,
+	bindComposerLanguage,
+	composerLanguage,
 	detachComposer,
 	readDraft,
+	setComposerLanguage,
+	setComposerLanguageAndNotify,
 	setDraft,
+	subscribeComposerLanguage,
 	writeDraft,
 } from '../plugins/translate/js/lib/composer'
 
@@ -150,5 +155,74 @@ describe('writing the draft', () => {
 	test('a handle with neither refuses instead of pretending', () => {
 		attachComposer({ current: { handleTextChanged: noop } } as any, undefined)
 		expect(setDraft('nope')).toBe(false)
+	})
+})
+
+describe('the language choice persists', () => {
+	test('a choice is written to the store', () => {
+		let stored = ''
+		bindComposerLanguage({
+			get: () => stored || undefined,
+			set: code => {
+				stored = code
+			},
+		})
+		setComposerLanguage('ja')
+		expect(stored).toBe('ja')
+		expect(composerLanguage()).toBe('ja')
+		detachComposer()
+	})
+
+	test('an empty store means "follow the setting"', () => {
+		let stored = ''
+		bindComposerLanguage({
+			get: () => stored || undefined,
+			set: code => {
+				stored = code
+			},
+		})
+		setComposerLanguage('ja')
+		setComposerLanguage(undefined)
+		expect(stored).toBe('')
+		expect(composerLanguage()).toBeUndefined()
+		detachComposer()
+	})
+
+	test('unbound, it follows the setting instead of throwing', () => {
+		bindComposerLanguage(undefined)
+		expect(composerLanguage()).toBeUndefined()
+	})
+
+	test('a store that throws does not throw into the tap handler', () => {
+		bindComposerLanguage({
+			get() {
+				throw new Error('nope')
+			},
+			set() {
+				throw new Error('nope')
+			},
+		})
+		expect(composerLanguage()).toBeUndefined()
+		expect(() => setComposerLanguage('ja')).not.toThrow()
+		bindComposerLanguage(undefined)
+	})
+
+	test('notify fires the listeners the buttons subscribe with', () => {
+		let stored = ''
+		bindComposerLanguage({
+			get: () => stored || undefined,
+			set: code => {
+				stored = code
+			},
+		})
+		let fired = 0
+		const unsubscribe = subscribeComposerLanguage(() => {
+			fired++
+		})
+		setComposerLanguageAndNotify('ko')
+		expect(fired).toBe(1)
+		expect(composerLanguage()).toBe('ko')
+		unsubscribe()
+		bindComposerLanguage(undefined)
 	})
 })

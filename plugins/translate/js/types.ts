@@ -83,6 +83,14 @@ export interface TranslateStorage {
 	 */
 	pickerLanguages: string[]
 
+	/**
+	 * The language the chat bar buttons translate into. Empty means "use `target`".
+	 *
+	 * Stored rather than per-message: a pick made in the chat bar is meant to stick, including
+	 * across a restart.
+	 */
+	composerTarget: string
+
 	// --- the plugin's own interface -----------------------------------------
 
 	/**

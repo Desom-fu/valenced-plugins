@@ -143,17 +143,17 @@ const en: Record<string, string> = {
 	'ai.failed': 'Failed.',
 	'ai.answered': 'It answered: “{reply}”',
 	'ai.note':
-		'Automatic mode never uses this. A model costs money per message, so it is only asked when you pick it on the Service page — everything else keeps using the free services.',
+		'Automatic mode never uses this. A model costs money per message, so it is only asked when you pick it on the Service page. If it fails — bad key, no credit, model down, field unsupported — the free services are tried instead, so a broken model never leaves you with nothing.',
 	'ai.toastNeedUrl': 'Fill in the base URL first',
 	'ai.toastModels': '{count} models',
 
 	// Chat bar languages page
 	'picker.note':
-		'These are the languages the chat bar picker offers, in this order. Tap one to move or remove it.',
+		'These are the languages the chat bar picker offers, in this order. Drag a row by the handle on its left to reorder it; tap a row to remove it.',
 	'picker.add': 'Add a language',
 	'picker.addBody': 'Pick from the full list; it is added to the end.',
 	'picker.empty':
-		'Nothing added yet, so the chat bar picker offers every language.',
+		'Nothing added yet — the chat bar picker stays empty until you add a language.',
 	'picker.moveUp': 'Move up',
 	'picker.moveDown': 'Move down',
 	'picker.remove': 'Remove from the chat bar',
@@ -163,6 +163,7 @@ const en: Record<string, string> = {
 	'bar.translateInto': 'Translate into {language}',
 	'bar.languageLabel': 'Language: {language}. Tap to change.',
 	'bar.pickTitle': 'Translate into',
+	'bar.followSetting': 'Same as the settings ({language})',
 	'bar.noLanguages':
 		'No languages configured — add some in Translate+ settings.',
 
@@ -272,15 +273,16 @@ const zhCN: Record<string, string> = {
 	'ai.failed': '失败。',
 	'ai.answered': '它回复了：“{reply}”',
 	'ai.note':
-		'自动模式绝不会用到这里。模型是每条消息都要花钱的，所以只有你在「翻译服务」里明确选它时才会调用——其他情况一律走免费服务。',
+		'自动模式绝不会用到这里。模型是每条消息都要花钱的，所以只有你在「翻译服务」里明确选它时才会调用。如果它失败（密钥错、没余额、模型挂了、不支持该字段），会自动改用免费服务，所以模型出问题也不会让你没得翻。',
 	'ai.toastNeedUrl': '先把基础 URL 填上',
 	'ai.toastModels': '{count} 个模型',
 
 	'picker.note':
-		'这些就是聊天栏选择器里的语言，按此顺序显示。点一项可以调整顺序或移除。',
+		'这些就是聊天栏选择器里的语言，按此顺序显示。按住左侧的把手拖动即可调整顺序；点一项可以移除。',
 	'picker.add': '添加语言',
 	'picker.addBody': '从完整列表里挑，会加到末尾。',
-	'picker.empty': '还没有添加任何语言，聊天栏选择器会显示全部语言。',
+	'picker.empty':
+		'还没有添加任何语言，聊天栏选择器会是空的，加一个才会有内容。',
 	'picker.moveUp': '上移',
 	'picker.moveDown': '下移',
 	'picker.remove': '从聊天栏移除',
@@ -289,6 +291,7 @@ const zhCN: Record<string, string> = {
 	'bar.translateInto': '翻译成{language}',
 	'bar.languageLabel': '语言：{language}。点一下更改。',
 	'bar.pickTitle': '翻译成',
+	'bar.followSetting': '跟随设置里的语言（{language}）',
 	'bar.noLanguages': '还没有配置语言——在 Translate+ 设置里添加。',
 
 	'toast.cannotRead': '这一版读不到输入框内容',

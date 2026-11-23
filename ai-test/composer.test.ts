@@ -7,6 +7,7 @@
  */
 import {
 	attachComposer,
+	bindComposerLanguage,
 	composerLanguage,
 	detachComposer,
 	findRef,
@@ -122,7 +123,16 @@ const d = makeHandle('nothing writable', { replaceRange: false })
 attachComposer(d.ref, d.state)
 check('unwritable handle returns false', setDraft('x') === false)
 
-console.log('\nPer-message language')
+console.log('\nChat bar language')
+// The choice lives in the plugin's storage; the module takes a store rather than importing state,
+// so this stands in for it and the persistence rules are the same ones production uses.
+let storedLanguage = ''
+bindComposerLanguage({
+	get: () => storedLanguage || undefined,
+	set: code => {
+		storedLanguage = code
+	},
+})
 setComposerLanguage(undefined)
 check(
 	'starts undefined, meaning "use settings"',
@@ -130,6 +140,7 @@ check(
 )
 setComposerLanguage('ja')
 check('holds the picked code', composerLanguage() === 'ja')
+check('and it was written to storage', storedLanguage === 'ja', storedLanguage)
 
 let notifications = 0
 const unsubscribe = subscribeComposerLanguage(() => {

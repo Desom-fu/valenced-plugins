@@ -12,7 +12,7 @@
 
 import { Stores } from '@valenced/discord/flux'
 import { aiLastError, translateWithAi } from './ai'
-import { FREE_PROVIDERS, providerById, translateWithChain } from './providers'
+import { providerPlan, translateWithChain } from './providers'
 import { repaintMessage } from './repaint'
 import { aiConfigFromStorage, debug, settings, toast } from './state'
 import { mask } from './tokens'
@@ -27,29 +27,12 @@ import {
 	showingIds,
 	translationFor,
 } from './translations'
-import type { Provider } from './providers'
 
 /** Records the last outcome for the Debug page. Porting rule 3: report outcomes, not attempts. */
 let lastOutcome = 'Nothing translated yet'
 
 export function lastTranslateOutcome(): string {
 	return lastOutcome
-}
-
-/**
- * The provider order for this run.
- *
- * `auto` is the four free services, full stop: a model must never be reached by falling back,
- * because that turns a free service's bad minute into a bill. `ai` is therefore only ever run when
- * it was named, and a named provider is tried first with the free ones behind it — a pin is a
- * preference, not an instruction to fail.
- */
-function orderFor(pinned: string): Provider[] {
-	if (pinned === 'auto') return FREE_PROVIDERS
-	const first = providerById(pinned)
-	if (!first) return FREE_PROVIDERS
-	if (first.id === 'ai') return [first]
-	return [first, ...FREE_PROVIDERS.filter(provider => provider.id !== first.id)]
 }
 
 /**
@@ -114,9 +97,12 @@ export async function translateText(
 	let result: { text: string; detected?: string; provider: any } | undefined
 	let trail = ''
 
-	if (s.provider === 'ai') {
+	const plan = providerPlan(s.provider)
+
+	if (plan.model) {
 		// The AI path needs the masked text itself, not `(text, to, from)`, so it is called here
-		// rather than through the chain. Automatic mode never reaches this branch.
+		// rather than through the chain. Bad key, no credit, model down, unsupported field: any of
+		// those falls through to the free services below rather than failing the translation.
 		const translated = await translateWithAi(
 			masked,
 			target,
@@ -128,15 +114,22 @@ export async function translateText(
 		} else {
 			trail = `ai:failed (${aiLastError()})`
 		}
-	} else {
+	}
+
+	// The model is the top of the chain, not the end of it: when it did not answer — or was not
+	// asked — the free services run exactly as automatic mode would.
+	if (!result) {
 		const outcome = await translateWithChain(
 			masked.text,
 			target,
 			'auto',
-			orderFor(s.provider),
+			plan.free,
 		)
 		result = outcome.result
-		trail = outcome.attempts.map(a => `${a.id}:${a.outcome}`).join(' ')
+		const freeTrail = outcome.attempts
+			.map(a => `${a.id}:${a.outcome}`)
+			.join(' ')
+		trail = trail ? `${trail} ${freeTrail}` : freeTrail
 	}
 
 	debug(`translateText: ${trail || 'no providers tried'}`)

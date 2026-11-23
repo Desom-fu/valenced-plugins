@@ -334,7 +334,7 @@ const mymemory: Provider = {
 const ai: Provider = {
 	id: 'ai',
 	name: 'AI',
-	note: 'Your own OpenAI-compatible endpoint. Needs a URL, a key and a model.',
+	note: 'Your own OpenAI-compatible endpoint. Needs a URL, a key and a model. If it fails, the free services are used instead.',
 	async translate() {
 		// Deliberately unreachable: see the note above. Returning nothing keeps the chain honest
 		// if it is ever handed this provider by mistake.
@@ -355,6 +355,37 @@ export const FREE_PROVIDERS: Provider[] = [google, bing, yandex, mymemory]
 
 export function providerById(id: string): Provider | undefined {
 	return PROVIDERS.find(provider => provider.id === id)
+}
+
+/**
+ * What to try for a given provider setting.
+ *
+ * The model is the *top of the chain*, not a branch that ends it. Picking `ai` means "use my model
+ * first, then whatever automatic mode would do" — so a bad key, an empty balance or a model that is
+ * simply down degrades to a working translation instead of a broken one. That cannot start costing
+ * money by itself: `ai` is only reached by being chosen.
+ *
+ * `auto` still contains no model at all. That is the one rule that must never break — a free
+ * service's bad minute must not turn into a bill.
+ *
+ * Here rather than in `translate.ts` so it can be tested without the Discord runtime that file
+ * imports.
+ */
+export function providerPlan(pinned: string): {
+	model: boolean
+	free: Provider[]
+} {
+	if (pinned === 'ai') return { model: true, free: FREE_PROVIDERS }
+	if (pinned === 'auto') return { model: false, free: FREE_PROVIDERS }
+	const first = providerById(pinned)
+	if (!first) return { model: false, free: FREE_PROVIDERS }
+	return {
+		model: false,
+		free: [
+			first,
+			...FREE_PROVIDERS.filter(provider => provider.id !== first.id),
+		],
+	}
 }
 
 // --- the chain --------------------------------------------------------------

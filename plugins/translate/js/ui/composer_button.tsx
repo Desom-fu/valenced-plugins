@@ -225,6 +225,20 @@ function LanguageSheet({ current }: { current: string }) {
 					title: t('bar.pickTitle'),
 				})
 			: null,
+		// The way back: a language picked here sticks, so there has to be a row that hands the
+		// choice back to the settings instead of leaving it permanent by accident.
+		React.createElement(
+			TableRowGroup,
+			{ hasIcons: true },
+			React.createElement(TableRow, {
+				label: t('bar.followSetting', { language: nameOf(settings().target) }),
+				subLabel: settings().target,
+				...(Icon && check && !composerLanguage()
+					? { icon: React.createElement(Icon, { source: check }) }
+					: {}),
+				onPress: () => pick(''),
+			}),
+		),
 		rows.length
 			? React.createElement(
 					TableRowGroup,

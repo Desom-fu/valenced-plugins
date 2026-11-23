@@ -20,6 +20,7 @@ import { setupChangelog } from '../shared/changelog'
 import { reportError, setReporter } from '../shared/report'
 import { CHANGELOG } from './changelog'
 import { DEFAULTS } from './defaults'
+import { bindComposerLanguage } from './lib/composer'
 import { resetCooldowns } from './lib/providers'
 import { setStorage } from './lib/state'
 import { resetTranslations } from './lib/translations'
@@ -54,6 +55,23 @@ export default plugin<{ jsonStorage: TranslateStorage }>({
 		cleanup(setupChangelog({ plugin, jsonStorage }, CHANGELOG))
 
 		setStorage(jsonStorage)
+
+		// The chat bar's language choice is a setting, not a per-message one: it survives a restart.
+		// Bound here because `lib/composer.ts` stays free of the plugin state (see its note).
+		cleanup(
+			(() => {
+				bindComposerLanguage({
+					get: () => {
+						const value = jsonStorage.cache?.composerTarget
+						return typeof value === 'string' && value ? value : undefined
+					},
+					set: code => {
+						void jsonStorage.set({ composerTarget: code })
+					},
+				})
+				return () => bindComposerLanguage(undefined)
+			})(),
+		)
 
 		try {
 			cleanup(registerPages())

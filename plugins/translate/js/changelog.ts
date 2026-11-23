@@ -3,6 +3,16 @@ import type { ChangelogEntry } from '../shared/changelog'
 /** Newest first. Every version users got gets an entry; see shared/changelog.tsx. */
 export const CHANGELOG: ChangelogEntry[] = [
 	{
+		version: '0.8.1',
+		date: '2026-11-23',
+		title: 'The language sticks, the model degrades, and rows drag',
+		changes: [
+			'The language picked in the chat bar is now stored, so it is still there after a restart. A "Same as the settings" row at the top of that sheet hands the choice back.',
+			'Your own model is now the top of the chain rather than a dead end: if it fails — bad key, no credit, model down, unsupported field — the free services run exactly as automatic mode would. Automatic mode still never reaches a model.',
+			'Reordering the chat bar languages is now a drag: hold the handle on the left of a row and move it. Tap still opens move up / move down / remove, for precision.',
+		],
+	},
+	{
 		version: '0.8.0',
 		date: '2026-11-23',
 		title: 'The language sheet opens, and the plugin speaks Chinese',

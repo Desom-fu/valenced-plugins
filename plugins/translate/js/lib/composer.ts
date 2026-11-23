@@ -245,20 +245,50 @@ export function setDraft(text: string): boolean {
 }
 
 /**
- * The language the composer buttons should translate into.
+ * The language the composer buttons translate into.
  *
- * Kept here rather than in storage on purpose: it is a per-message choice ("translate this one to
- * Japanese"), not a setting, and persisting it would silently change what the next message does.
- * It starts as `undefined`, which the buttons read as "use the target from settings".
+ * Stored, not per-message: picking Japanese in the chat bar is a statement about what you want to
+ * keep doing, and having it reset on every restart made the picker feel broken. So it lives in
+ * storage, next to the other settings, and survives a restart.
+ *
+ * It is still *separate* from `target` (the language received messages are translated into): the two
+ * buttons sit in the composer, and someone may well want to write in one language while reading in
+ * another. An empty value means "no choice made", which falls back to `target`.
  */
-let composerTarget: string | undefined
+/**
+ * Where the choice is stored.
+ *
+ * Bound from `index.ts` rather than imported: this module must stay free of the plugin's state and
+ * of `@valenced/*`, both so a test can drive it and so the module graph does not grow a cycle
+ * (`state` -> `composer` -> `state`). Unbound, the buttons simply follow `target`, which is the
+ * behaviour before any choice has been made anyway.
+ */
+export interface ComposerLanguageStore {
+	get(): string | undefined
+	set(code: string): void
+}
+
+let languageStore: ComposerLanguageStore | undefined
+
+export function bindComposerLanguage(store: ComposerLanguageStore | undefined) {
+	languageStore = store
+}
 
 export function composerLanguage(): string | undefined {
-	return composerTarget
+	try {
+		const stored = languageStore?.get()
+		return typeof stored === 'string' && stored ? stored : undefined
+	} catch {
+		return undefined
+	}
 }
 
 export function setComposerLanguage(code: string | undefined) {
-	composerTarget = code
+	try {
+		languageStore?.set(code ?? '')
+	} catch {
+		/* a failed write leaves the previous choice; it must not throw into a tap handler */
+	}
 }
 
 /** Listeners, so the buttons re-render when the language is picked. */
@@ -272,7 +302,7 @@ export function subscribeComposerLanguage(listener: () => void): () => void {
 }
 
 export function setComposerLanguageAndNotify(code: string | undefined) {
-	composerTarget = code
+	setComposerLanguage(code)
 	for (const listener of listeners) {
 		try {
 			listener()

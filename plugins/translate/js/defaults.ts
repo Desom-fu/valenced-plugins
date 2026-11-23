@@ -33,6 +33,9 @@ export const DEFAULTS: TranslateStorage = {
 	// is still reachable from the settings page's full list, and this list is editable there.
 	pickerLanguages: ['zh-CN', 'zh-TW', 'ja', 'en', 'ko', 'fr', 'de', 'ru', 'es'],
 
+	// Empty: the chat bar buttons follow `target` until the user picks something else there.
+	composerTarget: '',
+
 	// The plugin was English-only before this setting existed, so English stays the default;
 	// switching is one tap at the top of the settings page.
 	uiLanguage: 'en',
