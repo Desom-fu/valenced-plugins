@@ -1,7 +1,7 @@
 {
   "format": 1,
   "name": "Valenced Plugins by Desom-fu",
-  "description": "Translate for Valenced, ported from Revenge Next.",
+  "description": "Valenced ports of Revenge Next plugins by Desom-fu: Translate+, Read All+, Second Thoughts, Picture Links, Markdown Toolbar, Split Messages and RoseLib.",
   "plugins": {
     "bleelblep.translate": {
       "name": "Translate",
@@ -29,6 +29,186 @@
           "url": "https://desom-fu.github.io/valenced-plugins/pool/bleelblep.translate@0.6.5.zip",
           "sha256": "6e6ae8c59a699165f16f1ce1cb782ec5fab51842dc19c18232bc8b2471a43651",
           "size": 14487,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
+    "desom-fu.markdown-toolbar": {
+      "name": "Markdown Toolbar",
+      "description": "Floating markdown formatting bar under chat input.",
+      "author": "Desom-fu, Rosie, kmmiio99o",
+      "icon": "LettersIcon",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://desom-fu.github.io/valenced-plugins/pool/desom-fu.markdown-toolbar@1.0.0.zip",
+          "sha256": "a7db4d07a4bcf1964266371fd1ce557af332331e35a89564184858599478bc98",
+          "size": 2602,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            },
+            "desom-fu.rose-lib": {
+              "version": "*",
+              "optional": true
+            }
+          }
+        }
+      }
+    },
+    "desom-fu.picture-links": {
+      "name": "Picture Links",
+      "description": "Tap profile pictures and banners to view them full size, with save and share.",
+      "author": "Desom-fu, bleelblep",
+      "icon": "ImageIcon",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://desom-fu.github.io/valenced-plugins/pool/desom-fu.picture-links@1.0.0.zip",
+          "sha256": "b07e54b3931b5abb9edd4ab87c2d2d323a1c37c6e3c6d117f6b6f2279173fa5d",
+          "size": 5210,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
+    "desom-fu.read-all-plus": {
+      "name": "Read All+",
+      "description": "Adds a button under the server list to mark all unread servers and DMs as read, with per-server and per-DM exclusions.",
+      "author": "Desom-fu, OTKUSteyler",
+      "icon": "PuzzlePieceIcon",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://desom-fu.github.io/valenced-plugins/pool/desom-fu.read-all-plus@1.0.0.zip",
+          "sha256": "119ba37dc24d1c7a2ded0b312290588262d6a7a77d84937a9ab15c7cbd94f2b6",
+          "size": 2791,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
+    "desom-fu.rose-lib": {
+      "name": "RoseLib",
+      "description": "Core library providing media session hooks, chat bubble styling, declutter, reflection, and cloud access control for Rosie plugins.",
+      "author": "Desom-fu, Rosie",
+      "icon": "SettingsIcon",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://desom-fu.github.io/valenced-plugins/pool/desom-fu.rose-lib@1.0.0.zip",
+          "sha256": "561d6e174ae2d5e9b4585637e71d1f46cdd5d63f30fd2086f5e5279a6de7f62f",
+          "size": 9377,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
+    "desom-fu.second-thoughts": {
+      "name": "Second Thoughts",
+      "description": "Stops passwords, API keys and card numbers from being sent. Optional AI checks with AI Core.",
+      "author": "Desom-fu, bleelblep",
+      "icon": "ShieldIcon",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://desom-fu.github.io/valenced-plugins/pool/desom-fu.second-thoughts@1.0.0.zip",
+          "sha256": "49274a450563f0f597937d8265724888740cae03298f0543bb4846fad90b2477",
+          "size": 15459,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            },
+            "bleelblep.ai-core": {
+              "version": ">=1 <3",
+              "optional": true
+            }
+          }
+        }
+      }
+    },
+    "desom-fu.split-messages": {
+      "name": "Split Messages",
+      "description": "Automatically splits messages over Discord's character limit into multiple sequential messages instead of blocking the send.",
+      "author": "Desom-fu, Rosie",
+      "icon": "ChatIcon",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://desom-fu.github.io/valenced-plugins/pool/desom-fu.split-messages@1.0.0.zip",
+          "sha256": "ec3ccad457171f725f2869f3bb28e298718c1e90d9279227da71344bcce4f55b",
+          "size": 4315,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            },
+            "desom-fu.rose-lib": {
+              "version": "*",
+              "optional": true
+            }
+          }
+        }
+      }
+    },
+    "desom-fu.translate": {
+      "name": "Translate+",
+      "description": "Translate messages in place with a long-press, or translate what you are typing before you send it. Free services out of the box, or your own OpenAI-compatible endpoint.",
+      "author": "Desom-fu",
+      "icon": "GlobeEarthIcon",
+      "channels": {
+        "latest": "0.7.0"
+      },
+      "versions": {
+        "0.7.0": {
+          "url": "https://desom-fu.github.io/valenced-plugins/pool/desom-fu.translate@0.7.0.zip",
+          "sha256": "89040fc1af56052fb208b014220a792b51623fccbb9550b16a721b965b0f3ac7",
+          "size": 20195,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
