@@ -3,6 +3,14 @@ import type { ChangelogEntry } from '../shared/changelog'
 /** Newest first. Every version users got gets an entry; see shared/changelog.tsx. */
 export const CHANGELOG: ChangelogEntry[] = [
 	{
+		version: '0.7.2',
+		date: '2026-11-23',
+		title: 'Works on both component shapes',
+		changes: [
+			'The chat bar hook now patches the render function wherever the build actually put it, so it installs on the older memo(forwardRef) layout as well as the current one.',
+		],
+	},
+	{
 		version: '0.7.1',
 		date: '2026-11-23',
 		title: 'The chat bar button actually appears',

@@ -52,7 +52,7 @@ import { useReRender } from '@valenced/utils/react'
 import * as React from 'react'
 import { reportError } from '../../shared/report'
 import { attachComposer, detachComposer, findRef } from '../lib/composer'
-import { matchesMemoName, prependChild } from '../lib/composerRow'
+import { matchesMemoName, prependChild, renderHost } from '../lib/composerRow'
 import { getStorage, settings } from '../lib/state'
 import { wrapRender } from '../lib/wrapRender'
 import { ComposerTranslateButton } from '../ui/composer_button'
@@ -147,22 +147,27 @@ function patchRightActions(): () => void {
 	const undos: Array<() => void> = []
 	const install = (exports: any, how: string) => {
 		if (status.row) return
+		const target = renderHost(exports)
+		if (!target) {
+			status.lastError = `${how}: unknown component shape`
+			return
+		}
 		try {
-			// `before` on `type` runs inside the row's render, so a hook is legal here.
+			// `before` on the render function runs inside the row's own render, so a hook is legal.
 			undos.push(
-				before(exports, 'type', (args: any[]) => {
+				before(target.host, target.key as any, (args: any[]) => {
 					try {
 						reRender = useReRender()
 					} catch {
 						/* no hook context in this build; the switch then needs a reopen */
 					}
 					return args
-				}),
+				}) as any,
 			)
 			undos.push(
-				after(exports, 'type', (tree: any) =>
+				after(target.host, target.key as any, (tree: any) =>
 					settings().composerButton ? withButton(tree) : tree,
-				),
+				) as any,
 			)
 			status.row = true
 			status.lastError = how === 'withMemoName' ? '' : `matched by ${how}`

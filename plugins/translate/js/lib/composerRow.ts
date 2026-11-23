@@ -58,6 +58,34 @@ function named(component: any, name: string): boolean {
 }
 
 /**
+ * Where the render function actually lives, so `before`/`after` can patch it.
+ *
+ * The patcher works on `parent[key]`, and the key is not the same for both memo shapes:
+ *
+ * - `memo(render)` → `{ host: exports, key: 'type' }`
+ * - `memo(forwardRef(render))` → `{ host: exports.type, key: 'render' }`
+ *
+ * Getting this wrong means patching an object rather than a function, which throws — and a thrown
+ * install is one more way for the surface to be silently absent. Also accepts a `{ default: … }`
+ * module shape, which is how some of these are exported.
+ */
+export function renderHost(
+	exports: any,
+): { host: any; key: 'render' | 'type' } | undefined {
+	try {
+		const candidate = exports?.default ?? exports
+		const inner = candidate?.type
+
+		if (typeof inner?.render === 'function')
+			return { host: inner, key: 'render' }
+		if (typeof inner === 'function') return { host: candidate, key: 'type' }
+		return undefined
+	} catch {
+		return undefined
+	}
+}
+
+/**
  * Puts [child] before whatever the row already had.
  *
  * The row is a `View`, so its children arrive as an array when there are several, as a single

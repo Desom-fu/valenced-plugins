@@ -10,6 +10,7 @@ import { describe, expect, test } from 'bun:test'
 import {
 	matchesMemoName,
 	prependChild,
+	renderHost,
 } from '../plugins/translate/js/lib/composerRow'
 
 const NAME = 'ChatInputRightActions'
@@ -114,5 +115,31 @@ describe('prependChild', () => {
 		const children = [emoji, send]
 		const result = prependChild(children, button)
 		expect(result.slice(1)).toEqual(children)
+	})
+})
+
+describe('renderHost', () => {
+	test('patches `type` on memo(render)', () => {
+		const exports = memoOfRender(NAME)
+		expect(renderHost(exports)).toEqual({ host: exports, key: 'type' })
+	})
+
+	test('patches `render` on memo(forwardRef(render))', () => {
+		const exports = memoOfForwardRef(NAME)
+		expect(renderHost(exports)).toEqual({ host: exports.type, key: 'render' })
+	})
+
+	test('unwraps a `{ default: … }` module shape', () => {
+		const exports = memoOfRender(NAME)
+		expect(renderHost({ default: exports })).toEqual({
+			host: exports,
+			key: 'type',
+		})
+	})
+
+	test('an unrecognisable shape is undefined, not a throw', () => {
+		expect(renderHost({})).toBeUndefined()
+		expect(renderHost(null)).toBeUndefined()
+		expect(renderHost({ type: 42 })).toBeUndefined()
 	})
 })
