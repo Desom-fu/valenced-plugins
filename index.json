@@ -165,7 +165,7 @@
       "author": "Desom-fu",
       "icon": "GlobeEarthIcon",
       "channels": {
-        "latest": "0.7.3"
+        "latest": "0.8.0"
       },
       "versions": {
         "0.7.0": {
@@ -211,6 +211,19 @@
           "url": "https://desom-fu.github.io/valenced-plugins/pool/desom-fu.translate@0.7.3.zip",
           "sha256": "80690e842af6d53595cb5c7e1568d8b506c315bf37073833c703906e9b2891d6",
           "size": 21915,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "0.8.0": {
+          "url": "https://desom-fu.github.io/valenced-plugins/pool/desom-fu.translate@0.8.0.zip",
+          "sha256": "4e48f6fbea8b56d77fb33299b3163965faef335699f2a54701d9a319b7e3c4bc",
+          "size": 27648,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
