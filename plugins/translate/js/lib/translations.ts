@@ -25,6 +25,14 @@ export interface Translation {
 	provider: ProviderId
 	/** True when it was translated without being asked, by the auto sweep. */
 	automatic: boolean
+	/**
+	 * The model that answered, when the provider is `ai`.
+	 *
+	 * Kept so the label under the row can name it: "Translated · gpt-4.1-mini" says which endpoint
+	 * and which model produced the text, which is the point of configuring one. Free services have
+	 * no model to name and leave this undefined.
+	 */
+	model?: string
 }
 
 /** Bounded so a long session cannot accumulate a copy of every channel visited. */

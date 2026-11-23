@@ -36,9 +36,11 @@ export interface TranslationResult {
 	detected?: string
 	/** Which provider answered. */
 	provider: ProviderId
+	/** Which model answered, when the provider is a model. */
+	model?: string
 }
 
-export type ProviderId = 'google' | 'bing' | 'yandex' | 'mymemory'
+export type ProviderId = 'google' | 'bing' | 'yandex' | 'mymemory' | 'ai'
 
 export interface Provider {
 	id: ProviderId
@@ -315,8 +317,41 @@ const mymemory: Provider = {
 	},
 }
 
-/** Default order: best quality first, the one with a hard quota last. */
-export const PROVIDERS: Provider[] = [google, bing, yandex, mymemory]
+// --- Your own model ---------------------------------------------------------
+
+/**
+ * The AI placeholder in the provider list.
+ *
+ * It exists so pinning, cooldowns, the Debug page and the settings picker all handle "AI" the same
+ * way they handle Google — one list, one vocabulary. The request itself is built in `lib/ai.ts`,
+ * because it needs the *masked* message so the `⟦0⟧` placeholders come back intact, and the
+ * `(text, to, from)` signature here has already lost that mapping.
+ *
+ * `translate.ts` therefore calls `translateWithAi` directly for this id and never routes it through
+ * `translateWithChain`. `name` stays "AI" on purpose: the row label replaces it with the model id,
+ * so the two spellings never appear side by side.
+ */
+const ai: Provider = {
+	id: 'ai',
+	name: 'AI',
+	note: 'Your own OpenAI-compatible endpoint. Needs a URL, a key and a model.',
+	async translate() {
+		// Deliberately unreachable: see the note above. Returning nothing keeps the chain honest
+		// if it is ever handed this provider by mistake.
+		return undefined
+	},
+}
+
+/** Every provider, for lookups, the Debug page and the settings picker. */
+export const PROVIDERS: Provider[] = [google, bing, yandex, mymemory, ai]
+
+/**
+ * What automatic mode is allowed to use.
+ *
+ * A model costs money per message. Spending it because a free endpoint had a bad minute is not a
+ * fallback, it is a bill — so `auto` never includes `ai`, no matter how it is configured.
+ */
+export const FREE_PROVIDERS: Provider[] = [google, bing, yandex, mymemory]
 
 export function providerById(id: string): Provider | undefined {
 	return PROVIDERS.find(provider => provider.id === id)

@@ -1,4 +1,5 @@
 import * as modulesSettings from '@valenced/discord/modules/settings'
+import Ai from './pages/Ai'
 import Appearance from './pages/Appearance'
 import Debug from './pages/Debug'
 import Language from './pages/Language'
@@ -6,11 +7,16 @@ import Service from './pages/Service'
 
 const DEBUG: boolean = false
 
-const PREFIX = 'bleelblep.translate'
+/**
+ * Route keys are namespaced by plugin id. Renaming the id therefore renames every route, which is
+ * what makes a fork's pages distinguishable from the original's in a shared settings navigator.
+ */
+const PREFIX = 'desom-fu.translate'
 
 export const LANGUAGE_ROUTE = `${PREFIX}.language`
 export const SERVICE_ROUTE = `${PREFIX}.service`
 export const APPEARANCE_ROUTE = `${PREFIX}.appearance`
+export const AI_ROUTE = `${PREFIX}.ai`
 export const DEBUG_ROUTE = `${PREFIX}.debug`
 
 /**
@@ -46,6 +52,7 @@ export function registerPages(): () => void {
 		unregister = [
 			route(LANGUAGE_ROUTE, 'Translate into', Language),
 			route(SERVICE_ROUTE, 'Service', Service),
+			route(AI_ROUTE, 'Your own model', Ai),
 			route(APPEARANCE_ROUTE, 'Appearance', Appearance),
 			...(DEBUG ? [route(DEBUG_ROUTE, 'Debug', Debug)] : []),
 		]

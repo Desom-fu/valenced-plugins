@@ -24,7 +24,11 @@
 			"**/*.ts",
 			"**/*.tsx",
 			"**/*.jsx",
-			"**/*.mjs"
+			"**/*.mjs",
+			"!plugins/*/bundle.js",
+			"!plugins/*/build",
+			"!pool",
+			"!dist"
 		],
 		"ignoreUnknown": true
 	},

@@ -35,4 +35,40 @@ export interface TranslateStorage {
 	/** Skip the work when the message is already in the target language. */
 	skipSameLanguage: boolean
 	debugLogging: boolean
+
+	// --- your own model -----------------------------------------------------
+
+	/**
+	 * Base URL of an OpenAI-compatible endpoint, e.g. `https://api.openai.com/v1`.
+	 *
+	 * Stored in the plugin's own storage file, which is local to the device. Empty means the AI
+	 * provider is not configured and the settings row says so.
+	 */
+	aiBaseUrl: string
+	/** Bearer token for that endpoint. Sent only to `aiBaseUrl`. */
+	aiApiKey: string
+	/** Model id as the server names it. */
+	aiModel: string
+	/**
+	 * Passed through as `reasoning_effort` when it is not `default`.
+	 *
+	 * `default` sends no field at all, which is what the cheaper models expect and what costs the
+	 * least to get a translation out of. See `lib/ai.ts`.
+	 */
+	aiEffort: string
+	/** System prompt. Empty means the built-in faithful-translation prompt. */
+	aiPrompt: string
+	/** Sampling temperature. */
+	aiTemperature: number
+	/** Per-request timeout, in milliseconds. */
+	aiTimeoutMs: number
+
+	// --- the composer button ------------------------------------------------
+
+	/**
+	 * Show the translate button at the left of send.
+	 *
+	 * On by default: it is the whole point of the feature, and it costs one square of chat bar.
+	 */
+	composerButton: boolean
 }

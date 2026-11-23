@@ -1,0 +1,24 @@
+{
+	"format": 1,
+	"id": "desom-fu.split-messages",
+	"name": "Split Messages",
+	"description": "Automatically splits messages over Discord's character limit into multiple sequential messages instead of blocking the send.",
+	"author": "Desom-fu, Rosie",
+	"icon": "ChatIcon",
+	"version": "1.0.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": "*"
+		},
+		"desom-fu.rose-lib": {
+			"version": "*",
+			"optional": true
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}

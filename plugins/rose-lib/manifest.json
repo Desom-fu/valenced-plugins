@@ -1,0 +1,20 @@
+{
+	"format": 1,
+	"id": "desom-fu.rose-lib",
+	"name": "RoseLib",
+	"description": "Core library providing media session hooks, chat bubble styling, declutter, reflection, and cloud access control for Rosie plugins.",
+	"author": "Desom-fu, Rosie",
+	"icon": "SettingsIcon",
+	"version": "1.0.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": "*"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}

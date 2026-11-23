@@ -266,7 +266,7 @@ function showWhatsNew(
 	const { ScrollView, View, Dimensions } = ReactNative
 	const { AlertModal, AlertActionButton, Text } = Design as any
 	const alerts = AlertActionCreators as any
-	const key = `bleelblep-whats-new-${plugin.id}`
+	const key = `desom-fu-whats-new-${plugin.id}`
 	const close = () => alerts.dismissAlert(key)
 	const shown = entries.slice(0, DIALOG_VERSIONS)
 	const more = entries.length - shown.length

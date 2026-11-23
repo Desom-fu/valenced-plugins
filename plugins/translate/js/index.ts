@@ -24,6 +24,7 @@ import { resetCooldowns } from './lib/providers'
 import { setStorage } from './lib/state'
 import { resetTranslations } from './lib/translations'
 import patchAutoTranslate from './patches/autoTranslate'
+import patchComposer from './patches/composerBar'
 import patchMessageActionSheet from './patches/messageActionSheet'
 import patchRowManager from './patches/rowManager'
 import Settings from './ui/pages/Settings'
@@ -74,6 +75,7 @@ export default plugin<{ jsonStorage: TranslateStorage }>({
 		apply('row rewriting', patchRowManager)
 		apply('message sheet', patchMessageActionSheet)
 		apply('auto translate', patchAutoTranslate)
+		apply('chat bar button', patchComposer)
 
 		// Neither cooldowns nor translations outlive the session: one is a fact about the last
 		// few minutes, the other is a view of somebody else's message.

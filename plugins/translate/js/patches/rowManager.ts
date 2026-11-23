@@ -68,7 +68,13 @@ function noteFor(translation: Translation): string | undefined {
 	if (s.showDetected && translation.detected)
 		notes.push(`from ${nameForDetected(translation.detected)}`)
 	if (s.showProvider)
-		notes.push(providerById(translation.provider)?.name ?? translation.provider)
+		// The model id when there is one: "AI" alone does not tell you which endpoint answered,
+		// and the whole point of configuring one is knowing that.
+		notes.push(
+			translation.model ||
+				providerById(translation.provider)?.name ||
+				translation.provider,
+		)
 	if (!notes.length) return undefined
 	// With the marker off, the details still need something to hang off.
 	return `${s.markTranslated ? '' : '🌐 '}${notes.join(' · ')}`

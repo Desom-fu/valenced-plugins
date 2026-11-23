@@ -9,6 +9,7 @@ import { providerById } from '../../lib/providers'
 import { sweepNow } from '../../patches/autoTranslate'
 import { rowIcon } from '../icon'
 import {
+	AI_ROUTE,
 	APPEARANCE_ROUTE,
 	DEBUG_ROUTE,
 	LANGUAGE_ROUTE,
@@ -84,6 +85,17 @@ export default function Settings({
 							arrow
 							onPress={() => navigation.navigate(SERVICE_ROUTE)}
 						/>
+						<TableRow
+							label="Your own model"
+							subLabel={
+								s.aiModel && s.aiBaseUrl
+									? `${s.aiModel} at ${s.aiBaseUrl}`
+									: 'Not set up — any OpenAI-compatible endpoint, with a test'
+							}
+							icon={rowIcon('SparklesIcon', 'MagicWandIcon')}
+							arrow
+							onPress={() => navigation.navigate(AI_ROUTE)}
+						/>
 					</TableRowGroup>
 
 					<TableRowGroup hasIcons>
@@ -97,6 +109,13 @@ export default function Settings({
 								if (value) sweepNow()
 							}}
 						/>
+						<TableSwitchRow
+							label="Translate button in the chat bar"
+							subLabel="A button left of send. Tap it to translate what you have typed; hold it to pick the language for this message."
+							icon={rowIcon('GlobeEarthIcon')}
+							value={!!s.composerButton}
+							onValueChange={value => set({ composerButton: value })}
+						/>
 						<TableRow
 							label="Appearance"
 							subLabel="The Translated label, the blue highlight, and what the label says"
@@ -107,11 +126,12 @@ export default function Settings({
 					</TableRowGroup>
 
 					<Text color="text-muted" variant="text-sm/normal">
-						No key, no account and no AI. Only MyMemory is an official public
-						API; Google, Bing and Yandex are used the way their own websites use
-						them, which is against their terms and can stop working without
-						warning. That is why there are four, and why a broken one is skipped
-						automatically.
+						Free services need no key and no account. Only MyMemory is an
+						official public API; Google, Bing and Yandex are used the way their
+						own websites use them, which is against their terms and can stop
+						working without warning. That is why there are four, and why a
+						broken one is skipped automatically. If you would rather not rely on
+						them, set up your own model above and pick it on the Service page.
 					</Text>
 
 					{DEBUG && (

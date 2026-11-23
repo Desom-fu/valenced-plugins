@@ -1,0 +1,20 @@
+{
+	"format": 1,
+	"id": "desom-fu.read-all-plus",
+	"name": "Read All+",
+	"description": "Adds a button under the server list to mark all unread servers and DMs as read, with per-server and per-DM exclusions.",
+	"author": "Desom-fu, OTKUSteyler",
+	"icon": "PuzzlePieceIcon",
+	"version": "1.0.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": "*"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}

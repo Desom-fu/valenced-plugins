@@ -1,0 +1,24 @@
+{
+	"format": 1,
+	"id": "desom-fu.second-thoughts",
+	"name": "Second Thoughts",
+	"description": "Stops passwords, API keys and card numbers from being sent. Optional AI checks with AI Core.",
+	"author": "Desom-fu, bleelblep",
+	"icon": "ShieldIcon",
+	"version": "1.0.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": "*"
+		},
+		"bleelblep.ai-core": {
+			"version": ">=1 <3",
+			"optional": true
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}

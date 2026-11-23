@@ -3,6 +3,21 @@ import type { ChangelogEntry } from '../shared/changelog'
 /** Newest first. Every version users got gets an entry; see shared/changelog.tsx. */
 export const CHANGELOG: ChangelogEntry[] = [
 	{
+		version: '0.7.0',
+		date: '2026-11-23',
+		title: 'Your own model, and a button in the chat bar',
+		changes: [
+			'Your own OpenAI-compatible endpoint: URL, key, model, and a Test connection button.',
+			'The model list can be loaded from the endpoint, or typed by hand.',
+			'Reasoning effort is selectable, defaulting to none at all (the cheapest option).',
+			'The system prompt is editable; left empty it uses a faithful-translation prompt.',
+			'A translate button left of send: tap to translate your draft, hold to pick the language.',
+			'Translated rows say which model answered, not just "AI".',
+			'Automatic mode still only ever uses the free services.',
+			'Renamed to Translate+ with the desom-fu.translate id, so it installs alongside the original.',
+		],
+	},
+	{
 		version: '0.6.5',
 		date: '2026-11-23',
 		title: 'Valenced port',

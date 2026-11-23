@@ -17,4 +17,15 @@ export const DEFAULTS: TranslateStorage = {
 	showDetected: true,
 	skipSameLanguage: true,
 	debugLogging: false,
+
+	// Nothing filled in: the AI provider is a deliberate choice, not a default.
+	aiBaseUrl: '',
+	aiApiKey: '',
+	aiModel: '',
+	aiEffort: 'default',
+	aiPrompt: '',
+	aiTemperature: 0.2,
+	aiTimeoutMs: 30_000,
+
+	composerButton: true,
 }

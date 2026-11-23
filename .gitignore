@@ -13,3 +13,8 @@ node_modules/
 .DS_Store
 .idea/
 *.iml
+
+# Release planning artifacts
+releases.json
+pool/
+index.json

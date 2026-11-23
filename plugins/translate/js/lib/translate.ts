@@ -11,9 +11,10 @@
  */
 
 import { Stores } from '@valenced/discord/flux'
-import { PROVIDERS, providerById, translateWithChain } from './providers'
+import { aiLastError, translateWithAi } from './ai'
+import { FREE_PROVIDERS, providerById, translateWithChain } from './providers'
 import { repaintMessage } from './repaint'
-import { debug, settings, toast } from './state'
+import { aiConfigFromStorage, debug, settings, toast } from './state'
 import { mask } from './tokens'
 import {
 	hasFailed,
@@ -38,15 +39,17 @@ export function lastTranslateOutcome(): string {
 /**
  * The provider order for this run.
  *
- * Pinning one still falls back to the rest afterwards: a pin is a preference, not an instruction
- * to fail. The alternative — pinned service down, plugin dead, no explanation — is exactly the
- * failure the chain exists to avoid.
+ * `auto` is the four free services, full stop: a model must never be reached by falling back,
+ * because that turns a free service's bad minute into a bill. `ai` is therefore only ever run when
+ * it was named, and a named provider is tried first with the free ones behind it — a pin is a
+ * preference, not an instruction to fail.
  */
 function orderFor(pinned: string): Provider[] {
-	if (pinned === 'auto') return PROVIDERS
+	if (pinned === 'auto') return FREE_PROVIDERS
 	const first = providerById(pinned)
-	if (!first) return PROVIDERS
-	return [first, ...PROVIDERS.filter(provider => provider.id !== first.id)]
+	if (!first) return FREE_PROVIDERS
+	if (first.id === 'ai') return [first]
+	return [first, ...FREE_PROVIDERS.filter(provider => provider.id !== first.id)]
 }
 
 /**
@@ -99,14 +102,34 @@ export async function fetchTranslation(
 	}
 
 	try {
-		const { result, attempts } = await translateWithChain(
-			masked.text,
-			s.target,
-			'auto',
-			orderFor(s.provider),
-		)
+		let result: { text: string; detected?: string; provider: any } | undefined
+		let trail = ''
 
-		const trail = attempts.map(a => `${a.id}:${a.outcome}`).join(' ')
+		if (s.provider === 'ai') {
+			// The AI path needs the masked message itself, not `(text, to, from)`, so it is called
+			// here rather than through the chain. Automatic mode never reaches this branch.
+			const translated = await translateWithAi(
+				masked,
+				s.target,
+				aiConfigFromStorage(),
+			)
+			if (translated) {
+				result = { text: translated, provider: 'ai' }
+				trail = 'ai:ok'
+			} else {
+				trail = `ai:failed (${aiLastError()})`
+			}
+		} else {
+			const outcome = await translateWithChain(
+				masked.text,
+				s.target,
+				'auto',
+				orderFor(s.provider),
+			)
+			result = outcome.result
+			trail = outcome.attempts.map(a => `${a.id}:${a.outcome}`).join(' ')
+		}
+
 		debug(`${messageId}: ${trail || 'no providers tried'}`)
 
 		if (!result) {
@@ -130,6 +153,9 @@ export async function fetchTranslation(
 			detected: result.detected,
 			provider: result.provider,
 			automatic,
+			// Only for the AI provider: it is the one whose answer depends on which model was
+			// picked, so the row names it instead of saying "AI".
+			model: result.provider === 'ai' ? settings().aiModel : undefined,
 		})
 		return true
 	} finally {
