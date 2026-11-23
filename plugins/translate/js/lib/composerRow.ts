@@ -86,16 +86,18 @@ export function renderHost(
 }
 
 /**
- * Puts [child] before whatever the row already had.
+ * Puts [child] — one element or several — before whatever the row already had.
  *
  * The row is a `View`, so its children arrive as an array when there are several, as a single
  * element when there is one, and as `undefined` when there are none. All three have to come back as
- * something the row can lay out left to right with the new child first.
+ * something the row can lay out left to right with the new children first.
  *
  * Note this is *prepend*, not append: the row ends in the send button, and the whole point is to
  * land to its left.
  */
 export function prependChild(children: any, child: any): any {
-	if (Array.isArray(children)) return [child, ...children]
-	return children ? [child, children] : child
+	const head = Array.isArray(child) ? child.filter(Boolean) : [child]
+	const rest = Array.isArray(children) ? children : children ? [children] : []
+	const all = [...head, ...rest]
+	return all.length === 1 ? all[0] : all
 }

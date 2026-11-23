@@ -1,33 +1,32 @@
 /**
  * Translating what is in the chat box.
  *
- * ## The same pipeline as a message, minus the row
+ * ## The same pipeline as a message
  *
- * A message translation rewrites a row on screen. This one writes back into the composer, so it
- * cannot reuse `fetchTranslation` — that one is keyed by message id and stores a translation for
- * the row hook to draw. Everything around it is shared: the provider order, the cooldown chain, the
- * token mask, and which provider the settings choose. So the AI-vs-free decision made in
- * `translate.ts` is made here too, by calling the same two things.
+ * Both directions go through `translateText` in `lib/translate.ts`: same token mask, same provider
+ * order, same cooldowns, same same-language rule, same restore. That is deliberate — "translate
+ * what I typed" must not become a second, subtly different translator. All this file adds is the
+ * two ends: read the draft, and write the answer back.
  *
  * ## What gets sent
  *
- * The draft is masked first (`tokens.ts`), exactly like a message. That matters more here than it
- * looks: a draft is where people type @mentions, emoji and links, and a model handed `@someone`
- * may translate the name. The mask swaps each for `⟦0⟧` and `restore` puts it back afterwards, so
+ * The draft is masked inside `translateText`, exactly like a message. That matters more here than
+ * it looks: a draft is where people type @mentions, emoji and links, and a model handed `@someone`
+ * may translate the name. The mask swaps each for `⟦0⟧` and the restore puts it back afterwards, so
  * what lands in the box still pings the right person.
  *
  * ## Outcomes
  *
- * Every failure ends in a toast with a reason, because the alternative — the button does nothing —
- * is indistinguishable from the button being broken. On success the box is replaced in one
- * `replaceRange`, so undo is a normal undo and the caret stays sane.
+ * Every failure ends in a toast naming the reason, because the alternative — the button does
+ * nothing — is indistinguishable from the button being broken. That is not hypothetical: the first
+ * release read the draft through one API that this build does not have, bailed out before doing
+ * anything, and looked dead.
  */
 
-import { translateWithAi } from './ai'
 import { composerLanguage, readDraft, setDraft } from './composer'
-import { FREE_PROVIDERS, providerById, translateWithChain } from './providers'
-import { aiConfigFromStorage, settings, toast } from './state'
-import { mask } from './tokens'
+import { describeCode } from './languages'
+import { settings, toast } from './state'
+import { translateText } from './translate'
 
 /** One translation at a time: a second tap while one is running would race on the draft. */
 let busy = false
@@ -39,7 +38,7 @@ export function composerBusy(): boolean {
 /**
  * Translates the draft into `target` and puts the result back in the box.
  *
- * `target` defaults to whatever the composer button has picked, then to the language in settings.
+ * `target` defaults to whatever the language button has picked, then to the language in settings.
  * Returns whether the box was changed.
  */
 export async function translateComposer(target?: string): Promise<boolean> {
@@ -47,58 +46,34 @@ export async function translateComposer(target?: string): Promise<boolean> {
 
 	const language = target ?? composerLanguage() ?? settings().target
 	const draft = readDraft()
+
+	// One message per cause, and each says which part failed. `readDraft` tries three routes, so
+	// getting here means the box genuinely cannot be seen.
 	if (draft === undefined) {
-		toast('Could not read the message box')
+		toast('Cannot read the message box on this build')
 		return false
 	}
-	const trimmed = draft.trim()
-	if (!trimmed) {
+	if (!draft.trim()) {
 		toast('Nothing to translate')
 		return false
 	}
 
 	busy = true
 	try {
-		const masked = mask(trimmed.slice(0, 4000))
-		// Nothing but markup: there is no prose in here.
-		if (!masked.text.replace(/⟦\s*\d+\s*⟧/g, '').trim()) {
-			toast('Nothing to translate')
+		const outcome = await translateText(draft, language)
+
+		if (!outcome) {
+			toast('Could not translate — see Translate+ > Debug')
+			return false
+		}
+		// The service decided the text is already in the target language. Say so: silently
+		// leaving the box unchanged looks exactly like a broken button.
+		if (outcome.alreadyTarget) {
+			toast(`Looks like it is already ${describeCode(language)}`)
 			return false
 		}
 
-		const s = settings()
-		let translated: string | undefined
-
-		if (s.provider === 'ai') {
-			translated = await translateWithAi(
-				masked,
-				language,
-				aiConfigFromStorage(),
-			)
-			if (!translated) {
-				toast('Could not translate — check the AI settings')
-				return false
-			}
-		} else {
-			const first = s.provider === 'auto' ? undefined : providerById(s.provider)
-			// Same rule as message translation: automatic never reaches a paid endpoint.
-			const order = first
-				? [first, ...FREE_PROVIDERS.filter(p => p.id !== first.id)]
-				: FREE_PROVIDERS
-			const { result } = await translateWithChain(
-				masked.text,
-				language,
-				'auto',
-				order,
-			)
-			if (!result) {
-				toast('Could not translate — see Translate+ > Debug')
-				return false
-			}
-			translated = result.text
-		}
-
-		const restored = masked.restore(translated).trim()
+		const restored = outcome.text.trim()
 		if (!restored) {
 			toast('The service returned nothing')
 			return false

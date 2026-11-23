@@ -12,6 +12,7 @@ import {
 	prependChild,
 	renderHost,
 } from '../plugins/translate/js/lib/composerRow'
+import { shortLabel } from '../plugins/translate/js/lib/languages'
 
 const NAME = 'ChatInputRightActions'
 
@@ -141,5 +142,58 @@ describe('renderHost', () => {
 		expect(renderHost({})).toBeUndefined()
 		expect(renderHost(null)).toBeUndefined()
 		expect(renderHost({ type: 42 })).toBeUndefined()
+	})
+})
+
+describe('shortLabel', () => {
+	test('uses the primary subtag, uppercase', () => {
+		expect(shortLabel('en')).toBe('EN')
+		expect(shortLabel('ja')).toBe('JA')
+	})
+
+	/** Four characters on a 32dp button pushes the row out of shape. */
+	test('drops the region so it never grows past three characters', () => {
+		expect(shortLabel('zh-CN')).toBe('ZH')
+		expect(shortLabel('zh-TW')).toBe('ZH')
+		expect(shortLabel('pt-BR')).toBe('PT')
+	})
+
+	test('never returns an empty label', () => {
+		expect(shortLabel('')).toBe('?')
+	})
+
+	test('an unknown code still shows something', () => {
+		expect(shortLabel('xx-YY')).toBe('XX')
+	})
+})
+
+describe('prependChild with a pair of buttons', () => {
+	const language = { kind: 'language' }
+	const translate = { kind: 'translate' }
+	const send = { kind: 'send' }
+
+	test('puts both before the row, in the given order', () => {
+		expect(prependChild(send, [language, translate])).toEqual([
+			language,
+			translate,
+			send,
+		])
+	})
+
+	test('keeps an existing array order after them', () => {
+		const emoji = { kind: 'emoji' }
+		expect(prependChild([emoji, send], [language, translate])).toEqual([
+			language,
+			translate,
+			emoji,
+			send,
+		])
+	})
+
+	test('works on an empty row', () => {
+		expect(prependChild(undefined, [language, translate])).toEqual([
+			language,
+			translate,
+		])
 	})
 })

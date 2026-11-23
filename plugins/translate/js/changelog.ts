@@ -3,6 +3,17 @@ import type { ChangelogEntry } from '../shared/changelog'
 /** Newest first. Every version users got gets an entry; see shared/changelog.tsx. */
 export const CHANGELOG: ChangelogEntry[] = [
 	{
+		version: '0.7.3',
+		date: '2026-11-23',
+		title: 'Two buttons, and they do something',
+		changes: [
+			'Tapping the button did nothing at all. It read the draft through one API this build does not have, gave up before translating, and the failure was silent. The draft is now read through three routes, including the edit callback Discord calls on every keystroke, so it works on builds without that API.',
+			'Split into two buttons: the left one shows the language it will translate into and opens the picker when tapped, the right one translates. A tap-and-hold was the only way in before, and nothing on screen said so.',
+			'Translating a draft now goes through the same function as translating a message: same services, same order, same mention/link masking, same already-in-target-language rule.',
+			'Every outcome says something — including "looks like it is already in that language" — instead of leaving the box unchanged and looking broken.',
+		],
+	},
+	{
 		version: '0.7.2',
 		date: '2026-11-23',
 		title: 'Works on both component shapes',

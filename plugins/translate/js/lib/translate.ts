@@ -73,6 +73,89 @@ export function rowStateFor(messageId: string): RowState {
 	return isShowing(messageId) ? 'show-original' : 'translate'
 }
 
+/** What `translateText` came back with. */
+export interface TextTranslation {
+	/** The translation, unmasked and ready to show or to write into the box. */
+	text: string
+	detected?: string
+	provider: any
+	/** Only set for the AI provider, whose answer depends on which model was picked. */
+	model?: string
+	/** Which services were tried, worst-last, for the Debug page. */
+	trail: string
+	/** The service said the text is already in the target language. */
+	alreadyTarget: boolean
+}
+
+/**
+ * Translates one piece of text. The single place the provider decision is made.
+ *
+ * Both callers go through here — a message on screen (`fetchTranslation`) and a draft in the chat
+ * box (`lib/composerTranslate.ts`) — so "translate what I typed" cannot drift from "translate that
+ * message": same mask, same provider order, same same-language rule, same restore.
+ *
+ * `automatic` mode never reaches a paid endpoint; a pinned provider is tried first with the free
+ * services behind it. Returns `undefined` when nothing answered.
+ */
+export async function translateText(
+	text: string,
+	target: string,
+): Promise<TextTranslation | undefined> {
+	const trimmed = typeof text === 'string' ? text.trim() : ''
+	if (!trimmed) return undefined
+
+	const s = settings()
+
+	// Mentions, emoji, links, code and spoilers never reach the service (see `tokens.ts`).
+	const masked = mask(trimmed.slice(0, 2000))
+	// Nothing but markup: there is no prose to translate.
+	if (!masked.text.replace(/⟦\s*\d+\s*⟧/g, '').trim()) return undefined
+
+	let result: { text: string; detected?: string; provider: any } | undefined
+	let trail = ''
+
+	if (s.provider === 'ai') {
+		// The AI path needs the masked text itself, not `(text, to, from)`, so it is called here
+		// rather than through the chain. Automatic mode never reaches this branch.
+		const translated = await translateWithAi(
+			masked,
+			target,
+			aiConfigFromStorage(),
+		)
+		if (translated) {
+			result = { text: translated, provider: 'ai' }
+			trail = 'ai:ok'
+		} else {
+			trail = `ai:failed (${aiLastError()})`
+		}
+	} else {
+		const outcome = await translateWithChain(
+			masked.text,
+			target,
+			'auto',
+			orderFor(s.provider),
+		)
+		result = outcome.result
+		trail = outcome.attempts.map(a => `${a.id}:${a.outcome}`).join(' ')
+	}
+
+	debug(`translateText: ${trail || 'no providers tried'}`)
+
+	if (!result) {
+		lastOutcome = `all providers failed (${trail})`
+		return undefined
+	}
+
+	return {
+		text: masked.restore(result.text),
+		detected: result.detected,
+		provider: result.provider,
+		model: result.provider === 'ai' ? s.aiModel : undefined,
+		trail,
+		alreadyTarget: s.skipSameLanguage && sameLanguage(result.detected, target),
+	}
+}
+
 /**
  * Fetches a translation and stores it. Does not decide whether to show it.
  *
@@ -93,47 +176,10 @@ export async function fetchTranslation(
 	const s = settings()
 	markInFlight(messageId, true)
 
-	// Mentions, emoji, links, code and spoilers never reach the service (see `tokens.ts`).
-	const masked = mask(trimmed.slice(0, 2000))
-	// Nothing but markup: there is no prose to translate.
-	if (!masked.text.replace(/⟦\s*\d+\s*⟧/g, '').trim()) {
-		markInFlight(messageId, false)
-		return false
-	}
-
 	try {
-		let result: { text: string; detected?: string; provider: any } | undefined
-		let trail = ''
+		const outcome = await translateText(trimmed, s.target)
 
-		if (s.provider === 'ai') {
-			// The AI path needs the masked message itself, not `(text, to, from)`, so it is called
-			// here rather than through the chain. Automatic mode never reaches this branch.
-			const translated = await translateWithAi(
-				masked,
-				s.target,
-				aiConfigFromStorage(),
-			)
-			if (translated) {
-				result = { text: translated, provider: 'ai' }
-				trail = 'ai:ok'
-			} else {
-				trail = `ai:failed (${aiLastError()})`
-			}
-		} else {
-			const outcome = await translateWithChain(
-				masked.text,
-				s.target,
-				'auto',
-				orderFor(s.provider),
-			)
-			result = outcome.result
-			trail = outcome.attempts.map(a => `${a.id}:${a.outcome}`).join(' ')
-		}
-
-		debug(`${messageId}: ${trail || 'no providers tried'}`)
-
-		if (!result) {
-			lastOutcome = `all providers failed (${trail})`
+		if (!outcome) {
 			markFailed(messageId, true)
 			return false
 		}
@@ -141,21 +187,25 @@ export async function fetchTranslation(
 
 		// Same language in and out means the service found nothing to do. Worth remembering so
 		// the auto sweep does not ask about it again, but not worth showing.
-		if (s.skipSameLanguage && sameLanguage(result.detected, s.target)) {
-			lastOutcome = `${result.provider}: already ${s.target}`
-			remember(messageId, { ...result, automatic })
+		if (outcome.alreadyTarget) {
+			lastOutcome = `${outcome.provider}: already ${s.target}`
+			remember(messageId, {
+				text: outcome.text,
+				detected: outcome.detected,
+				provider: outcome.provider,
+				automatic,
+				model: outcome.model,
+			})
 			return false
 		}
 
-		lastOutcome = `${result.provider} answered (${trail})`
+		lastOutcome = `${outcome.provider} answered (${outcome.trail})`
 		remember(messageId, {
-			text: masked.restore(result.text),
-			detected: result.detected,
-			provider: result.provider,
+			text: outcome.text,
+			detected: outcome.detected,
+			provider: outcome.provider,
 			automatic,
-			// Only for the AI provider: it is the one whose answer depends on which model was
-			// picked, so the row names it instead of saying "AI".
-			model: result.provider === 'ai' ? settings().aiModel : undefined,
+			model: outcome.model,
 		})
 		return true
 	} finally {

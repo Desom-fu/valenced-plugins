@@ -111,11 +111,11 @@ export default function Settings({
 							}}
 						/>
 						<TableSwitchRow
-							label="Translate button in the chat bar"
+							label="Translate buttons in the chat bar"
 							subLabel={
 								s.composerButton && !composerStatus().row
-									? 'On — but the chat bar row was not found in this Discord build, so there is nothing to draw it in. Open the chat once; if this stays, the build moved the component.'
-									: 'A button left of send. Tap it to translate what you have typed; hold it to pick the language for this message.'
+									? 'On — but the chat bar row was not found in this Discord build, so there is nothing to draw them in. Open the chat once; if this stays, the build moved the component.'
+									: 'Two buttons left of send: the left one shows the language it will translate into and opens the picker, the right one translates what you have typed. Same services and same rules as translating a message.'
 							}
 							icon={rowIcon('GlobeEarthIcon')}
 							value={!!s.composerButton}

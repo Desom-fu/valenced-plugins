@@ -81,6 +81,20 @@ export function describeCode(code: string): string {
 }
 
 /**
+ * A two-or-three character label for a language, for the chat bar button.
+ *
+ * The button is 32dp square next to send, so the full name does not fit and the code is what a
+ * person actually recognises at a glance. `zh-CN` is four characters and would push the button out
+ * of shape, so the region is dropped: `ZH`. Anything unrecognised falls back to the code's own
+ * leading letters, uppercase.
+ */
+export function shortLabel(code: string): string {
+	if (!code) return '?'
+	const primary = code.split(/[-_]/)[0]
+	return primary.slice(0, 3).toUpperCase()
+}
+
+/**
  * Codes the services *report* that are not the ones stored above: Bing's script-tagged Chinese,
  * its `nb` and `fil`, and the retired `iw` Google still sometimes returns for Hebrew.
  */

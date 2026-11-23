@@ -55,7 +55,10 @@ import { attachComposer, detachComposer, findRef } from '../lib/composer'
 import { matchesMemoName, prependChild, renderHost } from '../lib/composerRow'
 import { getStorage, settings } from '../lib/state'
 import { wrapRender } from '../lib/wrapRender'
-import { ComposerTranslateButton } from '../ui/composer_button'
+import {
+	ComposerLanguageButton,
+	ComposerTranslateButton,
+} from '../ui/composer_button'
 import type { ReactElement, ReactNode } from 'react'
 
 const CHAT_INPUT = 'modules/chat_input/native/ChatInput.tsx'
@@ -120,19 +123,29 @@ function patchChatInput(): () => void {
 	}
 }
 
-/** Prepends the button to whatever the row rendered. Exported for its test. */
-export function withButton(tree: any): any {
+/**
+ * Prepends both buttons to whatever the row rendered.
+ *
+ * Order matters: the language button first, then translate, then the client's own buttons — so the
+ * pair reads "which language → do it" left to right, and both sit to the left of send.
+ */
+export function withButtons(tree: any): any {
 	if (!React.isValidElement(tree)) return tree
 	try {
-		const button = React.createElement(ComposerTranslateButton, {
-			key: 'translate-composer',
-		})
 		const children: any = (tree as any).props?.children
+		const inserted = [
+			React.createElement(ComposerLanguageButton, {
+				key: 'translate-composer-language',
+			}),
+			React.createElement(ComposerTranslateButton, {
+				key: 'translate-composer',
+			}),
+		]
 		status.inserted = true
 		return React.cloneElement(
 			tree as any,
 			undefined,
-			prependChild(children, button),
+			prependChild(children, inserted),
 		)
 	} catch (error) {
 		status.lastError = String(error)
@@ -166,7 +179,7 @@ function patchRightActions(): () => void {
 			)
 			undos.push(
 				after(target.host, target.key as any, (tree: any) =>
-					settings().composerButton ? withButton(tree) : tree,
+					settings().composerButton ? withButtons(tree) : tree,
 				) as any,
 			)
 			status.row = true
