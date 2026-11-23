@@ -3,6 +3,7 @@ import { Design } from '@valenced/discord/design'
 import { ReactNavigationNative } from '@valenced/externals/react-navigation'
 import * as ReactNative from 'react-native'
 import { DEFAULTS } from '../../defaults'
+import { t } from '../../i18n'
 import { PROVIDERS } from '../../lib/providers'
 import { getStorage } from '../../lib/state'
 import { useBottomPadding } from '../safeArea'
@@ -41,8 +42,8 @@ export default function Service() {
 							}}
 						>
 							<TableRadioRow
-								label="Automatic"
-								subLabel="Google, then Bing, then Yandex, then MyMemory — whichever answers first. Recommended."
+								label={t('service.auto')}
+								subLabel={t('service.autoBody')}
 								value="auto"
 							/>
 							{PROVIDERS.map(provider => (
@@ -57,10 +58,7 @@ export default function Service() {
 					</TableRowGroup>
 
 					<Text color="text-muted" variant="text-sm/normal">
-						Picking a service only decides which is asked first. If it fails,
-						the others are still tried, so a service going down never stops
-						translation working. A service that fails is skipped for five
-						minutes before being tried again.
+						{t('service.note')}
 					</Text>
 				</Stack>
 			</ScrollView>

@@ -23,8 +23,9 @@
  * anything, and looked dead.
  */
 
+import { t } from '../i18n'
 import { composerLanguage, readDraft, setDraft } from './composer'
-import { describeCode } from './languages'
+import { languageFor } from './languages'
 import { settings, toast } from './state'
 import { translateText } from './translate'
 
@@ -50,11 +51,11 @@ export async function translateComposer(target?: string): Promise<boolean> {
 	// One message per cause, and each says which part failed. `readDraft` tries three routes, so
 	// getting here means the box genuinely cannot be seen.
 	if (draft === undefined) {
-		toast('Cannot read the message box on this build')
+		toast(t('toast.cannotRead'))
 		return false
 	}
 	if (!draft.trim()) {
-		toast('Nothing to translate')
+		toast(t('toast.nothing'))
 		return false
 	}
 
@@ -63,30 +64,34 @@ export async function translateComposer(target?: string): Promise<boolean> {
 		const outcome = await translateText(draft, language)
 
 		if (!outcome) {
-			toast('Could not translate — see Translate+ > Debug')
+			toast(t('toast.failed'))
 			return false
 		}
 		// The service decided the text is already in the target language. Say so: silently
 		// leaving the box unchanged looks exactly like a broken button.
 		if (outcome.alreadyTarget) {
-			toast(`Looks like it is already ${describeCode(language)}`)
+			toast(
+				t('toast.already', {
+					language: languageFor(language)?.name ?? language,
+				}),
+			)
 			return false
 		}
 
 		const restored = outcome.text.trim()
 		if (!restored) {
-			toast('The service returned nothing')
+			toast(t('toast.emptyReply'))
 			return false
 		}
 		// The whole draft, replaced in place: the person keeps their attachments and their cursor
 		// does not jump to the front of an empty box.
 		if (!setDraft(restored)) {
-			toast('Could not write to the message box')
+			toast(t('toast.cannotWrite'))
 			return false
 		}
 		return true
 	} catch {
-		toast('Could not translate — see Translate+ > Debug')
+		toast(t('toast.failed'))
 		return false
 	} finally {
 		busy = false

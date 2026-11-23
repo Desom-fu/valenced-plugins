@@ -28,4 +28,12 @@ export const DEFAULTS: TranslateStorage = {
 	aiTimeoutMs: 30_000,
 
 	composerButton: true,
+
+	// One glance, not a scroll: the languages someone actually picks mid-sentence. Everything else
+	// is still reachable from the settings page's full list, and this list is editable there.
+	pickerLanguages: ['zh-CN', 'zh-TW', 'ja', 'en', 'ko', 'fr', 'de', 'ru', 'es'],
+
+	// The plugin was English-only before this setting existed, so English stays the default;
+	// switching is one tap at the top of the settings page.
+	uiLanguage: 'en',
 }

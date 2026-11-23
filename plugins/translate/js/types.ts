@@ -71,4 +71,24 @@ export interface TranslateStorage {
 	 * On by default: it is the whole point of the feature, and it costs one square of chat bar.
 	 */
 	composerButton: boolean
+
+	// --- the chat bar picker ------------------------------------------------
+
+	/**
+	 * Which languages the chat bar picker offers, in the order it offers them.
+	 *
+	 * Only these are shown — the picker is a short list, not a searchable catalogue (that is the
+	 * settings page). Deliberately limited to what someone actually reaches for while typing, so
+	 * the sheet is one glance instead of a scroll.
+	 */
+	pickerLanguages: string[]
+
+	// --- the plugin's own interface -----------------------------------------
+
+	/**
+	 * Language of the settings pages. Not the translation target — see `target`.
+	 *
+	 * `'en'` or `'zh-CN'`; unknown values fall back to English.
+	 */
+	uiLanguage: string
 }

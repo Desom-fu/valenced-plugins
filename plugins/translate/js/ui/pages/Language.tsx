@@ -4,6 +4,7 @@ import { ReactNavigationNative } from '@valenced/externals/react-navigation'
 import * as React from 'react'
 import * as ReactNative from 'react-native'
 import { DEFAULTS } from '../../defaults'
+import { t } from '../../i18n'
 import { LANGUAGES, languageFor } from '../../lib/languages'
 import { getStorage } from '../../lib/state'
 import { repaintShowing } from '../../lib/translate'
@@ -74,7 +75,7 @@ export default function Language() {
 			>
 				<Stack spacing={24}>
 					<TextInput
-						placeholder="Search languages"
+						placeholder={t('language.search')}
 						value={query}
 						isClearable
 						onChange={setQuery}
@@ -110,14 +111,14 @@ export default function Language() {
 						</TableRowGroup>
 					) : (
 						<Text color="text-muted" variant="text-sm/normal">
-							Nothing matches "{query}". If you know its code, enter it below.
+							{t('language.empty', { query })}
 						</Text>
 					)}
 
 					<FieldGroup
-						title="Not listed?"
-						label="Language code"
-						description="Any code the services accept. It is used as soon as you type it."
+						title={t('language.customTitle')}
+						label={t('language.customLabel')}
+						description={t('language.customBody')}
 					>
 						<TextInput
 							placeholder="e.g. eu, haw, pt-BR"

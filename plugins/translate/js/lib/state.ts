@@ -1,5 +1,6 @@
 import { showToast } from '../../shared/toast'
 import { DEFAULTS } from '../defaults'
+import { bindLocaleSource } from '../i18n'
 import type { TranslateStorage } from '../types'
 
 const DEBUG: boolean = false
@@ -13,6 +14,18 @@ let storage: Storage | undefined
 export function setStorage(value: Storage) {
 	storage = value
 }
+
+/**
+ * Locale comes through the storage cache rather than a stored copy.
+ *
+ * `i18n` imports nothing from the plugin, so this is the only edge — and reading the cache on each
+ * `t()` call means a language change applies on the very next render with no subscription to keep
+ * in sync. An unloaded cache answers English, which is also the fallback for every missing string.
+ */
+bindLocaleSource(() => {
+	const value = storage?.cache?.uiLanguage
+	return typeof value === 'string' ? value : undefined
+})
 
 /** Sub-pages are plain navigator routes with no plugin `api` prop, so they read through this. */
 export function getStorage(): Storage | undefined {

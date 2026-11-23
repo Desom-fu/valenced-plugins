@@ -3,6 +3,17 @@ import type { ChangelogEntry } from '../shared/changelog'
 /** Newest first. Every version users got gets an entry; see shared/changelog.tsx. */
 export const CHANGELOG: ChangelogEntry[] = [
 	{
+		version: '0.8.0',
+		date: '2026-11-23',
+		title: 'The language sheet opens, and the plugin speaks Chinese',
+		changes: [
+			'Tapping the language button did nothing: the sheet was opened with a render function, but this API takes a promise resolving to a component. It now opens.',
+			'The chat bar sheet shows only the languages chosen in settings, in the order you set, and nothing else — no search there, because it is what you open mid-sentence.',
+			'A new "Chat bar languages" page adds, removes and reorders that list.',
+			'The plugin’s own settings pages can be shown in English or 简体中文, set at the bottom of the main page. It affects only these pages — what messages are translated into is separate.',
+		],
+	},
+	{
 		version: '0.7.3',
 		date: '2026-11-23',
 		title: 'Two buttons, and they do something',

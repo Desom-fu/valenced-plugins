@@ -1,44 +1,47 @@
 /**
- * The two buttons in the chat bar, and the language picker behind them.
+ * The two buttons in the chat bar, and the language sheet behind them.
  *
  * ## Why two, not one long-press
  *
  * One button with a tap and a hold hid half its function: nothing on screen says "hold me to choose
  * a language", so the picker was effectively undiscoverable. Two buttons say what they do — one
- * shows the language it will translate into and opens the picker when tapped, the other translates.
+ * shows the language it will translate into and opens the sheet, the other translates.
  *
- * ## What they are built from
+ * ## Why the sheet never opened
  *
- * `ChatInputActionButton` (the component that draws send and the other round buttons) takes an icon
- * asset and no label, so the language button — which has to *show a code* — is a `Pressable` of its
- * own with the same 32dp footprint. The translate button uses a generated icon when the build has
- * one, and a text glyph when it does not, because a `TableRowIcon` with no source draws nothing and
- * an invisible 32dp target reads as a missing button.
+ * `ActionSheetActionCreators.openLazy` does not take a render function. Its first argument is a
+ * **promise resolving to `{ default: Component }`** — the sheet is a real component rendered by the
+ * action-sheet host, not a callback. The first version passed a function, so the call did nothing at
+ * all and every tap looked ignored. This passes `Promise.resolve({ default: LanguageSheet })`, which
+ * is the shape the rest of the ecosystem uses.
  *
- * ## The picker
+ * ## Why the list is short and not searchable
  *
- * A searchable list of languages in the client's own sheet, because they do not fit on one phone
- * screen. `ActionSheetActionCreators.openLazy` is how every sheet in this app opens and
- * `TableRow`/`TableRowGroup` are the rows inside them — the same parts the message sheet already
- * uses for its Translate row, so it matches the rest of the client and closes the way people expect.
+ * The sheet is what someone opens mid-sentence, so it shows exactly the languages configured in
+ * settings, in that order, and nothing else. The searchable full catalogue lives in the settings
+ * page, where there is room for it. Tapping a row picks the language and closes the sheet — one
+ * decision, no confirm step.
  */
 
 import * as assets from '@valenced/assets'
-import * as actions from '@valenced/discord/actions'
+import { ActionSheetActionCreators } from '@valenced/discord/actions'
 import { Design } from '@valenced/discord/design'
 import { lookupGeneratedIconComponent } from '@valenced/utils/discord'
 import * as React from 'react'
 import * as ReactNative from 'react-native'
+import { t } from '../i18n'
 import {
 	composerLanguage,
 	setComposerLanguageAndNotify,
 	subscribeComposerLanguage,
 } from '../lib/composer'
 import { composerBusy, translateComposer } from '../lib/composerTranslate'
-import { describeCode, LANGUAGES, shortLabel } from '../lib/languages'
+import { languageFor, shortLabel } from '../lib/languages'
+import { pickerLanguages } from '../lib/picker'
 import { settings } from '../lib/state'
 
 const BUTTON_SIZE = 32
+const SHEET_KEY = 'translate-language'
 
 /** The language these buttons will translate into: the per-message pick, else the setting. */
 function useTargetLanguage(): string {
@@ -48,6 +51,11 @@ function useTargetLanguage(): string {
 		() => composerLanguage(),
 	)
 	return picked ?? settings().target
+}
+
+/** A display name for a code, falling back to the code itself for anything unlisted. */
+function nameOf(code: string): string {
+	return languageFor(code)?.name ?? code
 }
 
 /**
@@ -94,7 +102,7 @@ function translateGlyph(): any {
 	return null
 }
 
-/** Shared shape: a 32dp round-ish touch target that matches the other chat bar buttons. */
+/** Shared shape: a 32dp touch target that matches the other chat bar buttons. */
 function barButton(options: {
 	key: string
 	label: string
@@ -137,7 +145,7 @@ export function ComposerTranslateButton(): any {
 
 	return barButton({
 		key: 'translate-composer',
-		label: `Translate into ${describeCode(language)}`,
+		label: t('bar.translateInto', { language: nameOf(language) }),
 		onPress,
 		busy,
 		children: translateGlyph(),
@@ -155,7 +163,7 @@ export function ComposerLanguageButton(): any {
 
 	return barButton({
 		key: 'translate-composer-language',
-		label: `Language: ${describeCode(language)}. Tap to change.`,
+		label: t('bar.languageLabel', { language: nameOf(language) }),
 		onPress,
 		children: Text
 			? React.createElement(
@@ -172,51 +180,87 @@ export function ComposerLanguageButton(): any {
 }
 
 /**
- * The language picker.
+ * The sheet itself.
  *
- * `openLazy` is called with a render function whose result becomes the sheet's content, which is how
- * the client's own sheets are built. Tapping a row writes the choice and closes the sheet; there is
- * no confirm step, because picking a language *is* the decision.
+ * A component, because `openLazy` renders it — see the note at the top of this file. It reads the
+ * configured list at render time, so editing that list in settings changes the sheet without a
+ * reload.
  */
-export function openLanguagePicker(current: string) {
-	const content = () => {
-		const { TableRow, TableRowGroup } = Design as any
-		const { getAssetIdByName } = assets as any
-		const check = getAssetIdByName?.('CheckmarkSmallIcon')
-		const Icon = (Design as any).TableRowIcon ?? (Design as any).TableRow?.Icon
+function LanguageSheet({ current }: { current: string }) {
+	const { ActionSheet, BottomSheetTitleHeader, TableRowGroup, TableRow } =
+		Design as any
+	const { getAssetIdByName } = assets as any
+	const check = getAssetIdByName?.('CheckmarkSmallIcon')
+	const Icon = (Design as any).TableRowIcon ?? (Design as any).TableRow?.Icon
 
-		return React.createElement(
-			TableRowGroup,
-			null,
-			LANGUAGES.map(language =>
-				React.createElement(TableRow, {
-					key: language.code,
-					label: language.name,
-					subLabel: language.native,
-					// Only the current one gets a tick; the rest keep the same left gutter.
-					...(Icon && check && language.code === current
-						? { icon: React.createElement(Icon, { source: check }) }
-						: {}),
-					onPress: () => {
-						setComposerLanguageAndNotify(language.code)
-						try {
-							;(actions as any).ActionSheetActionCreators?.hideActionSheet()
-						} catch {
-							/* the sheet closes itself in some builds */
-						}
-					},
-				}),
-			),
-		)
+	// The configured order, resolved to names. A code with no catalogue entry still shows — someone
+	// may have typed `haw` deliberately.
+	const codes = pickerLanguages(settings().pickerLanguages)
+	const rows = codes.map(code => {
+		const language = languageFor(code)
+		return {
+			code,
+			label: language?.name ?? code,
+			subLabel:
+				language && language.native !== language.name
+					? `${language.native} · ${code}`
+					: code,
+		}
+	})
+
+	const pick = (code: string) => {
+		setComposerLanguageAndNotify(code)
+		try {
+			ActionSheetActionCreators.hideActionSheet(SHEET_KEY)
+		} catch {
+			/* the sheet closes itself in some builds */
+		}
 	}
 
+	return React.createElement(
+		ActionSheet,
+		null,
+		BottomSheetTitleHeader
+			? React.createElement(BottomSheetTitleHeader, {
+					title: t('bar.pickTitle'),
+				})
+			: null,
+		rows.length
+			? React.createElement(
+					TableRowGroup,
+					{ hasIcons: true },
+					rows.map(row =>
+						React.createElement(TableRow, {
+							key: row.code,
+							label: row.label,
+							subLabel: row.subLabel,
+							...(Icon && check && row.code === current
+								? { icon: React.createElement(Icon, { source: check }) }
+								: {}),
+							onPress: () => pick(row.code),
+						}),
+					),
+				)
+			: React.createElement(
+					TableRowGroup,
+					null,
+					React.createElement(TableRow, {
+						label: t('bar.noLanguages'),
+						disabled: true,
+					}),
+				),
+	)
+}
+
+/** Opens the sheet. `openLazy(sheetPromise, key, props)` — a promise, not a function. */
+export function openLanguagePicker(current: string) {
 	try {
-		;(actions as any).ActionSheetActionCreators?.openLazy(
-			content,
-			'translate-language',
-			{},
+		ActionSheetActionCreators.openLazy(
+			Promise.resolve({ default: LanguageSheet }),
+			SHEET_KEY,
+			{ current } as any,
 		)
 	} catch {
-		/* no sheet available on this build; the button keeps its current language */
+		/* no sheet system on this build; the buttons keep the current language */
 	}
 }

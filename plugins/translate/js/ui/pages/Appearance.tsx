@@ -2,6 +2,7 @@ import * as components from '@valenced/components'
 import { Design } from '@valenced/discord/design'
 import * as ReactNative from 'react-native'
 import { DEFAULTS } from '../../defaults'
+import { t } from '../../i18n'
 import { getStorage } from '../../lib/state'
 import { repaintShowing } from '../../lib/translate'
 import { rowIcon } from '../icon'
@@ -36,40 +37,40 @@ export default function Appearance() {
 	if (s.showProvider) parts.push('Google')
 	const preview = parts.length
 		? `${s.markTranslated ? '' : '🌐 '}${parts.join(' · ')}`
-		: 'No label'
+		: t('appearance.noLabelShort')
 
 	return (
 		<Page>
 			<ScrollView contentContainerStyle={{ paddingBottom: useBottomPadding() }}>
 				<Stack spacing={24}>
-					<TableRowGroup title="Marking translated messages" hasIcons>
+					<TableRowGroup title={t('appearance.marking')} hasIcons>
 						<TableSwitchRow
-							label="Blue highlight"
-							subLabel="A blue background and bar down the left, like a mention but blue. A message that is already highlighted keeps its own."
+							label={t('appearance.highlight')}
+							subLabel={t('appearance.highlightBody')}
 							icon={rowIcon('PaintPaletteIcon')}
 							value={!!s.highlightTranslated}
 							onValueChange={value => set({ highlightTranslated: value })}
 						/>
 						<TableSwitchRow
-							label="Translated label"
-							subLabel="A small 🌐 Translated line under the message, so it is never mistaken for what was actually written."
+							label={t('appearance.label')}
+							subLabel={t('appearance.labelBody')}
 							icon={rowIcon('GlobeEarthIcon')}
 							value={!!s.markTranslated}
 							onValueChange={value => set({ markTranslated: value })}
 						/>
 					</TableRowGroup>
 
-					<TableRowGroup title="Extra detail on the label" hasIcons>
+					<TableRowGroup title={t('appearance.detail')} hasIcons>
 						<TableSwitchRow
-							label="Original language"
-							subLabel="Adds where it was translated from, when the service says."
+							label={t('appearance.detected')}
+							subLabel={t('appearance.detectedBody')}
 							icon={rowIcon('ChatIcon', 'ic_message')}
 							value={!!s.showDetected}
 							onValueChange={value => set({ showDetected: value })}
 						/>
 						<TableSwitchRow
-							label="Which service"
-							subLabel="Adds the service that answered. Handy for comparing them; noise after that."
+							label={t('appearance.provider')}
+							subLabel={t('appearance.providerBody')}
 							icon={rowIcon('LinkIcon', 'ic_link')}
 							value={!!s.showProvider}
 							onValueChange={value => set({ showProvider: value })}
@@ -78,14 +79,14 @@ export default function Appearance() {
 
 					<Text color="text-muted" variant="text-sm/normal">
 						{labelOn
-							? `The label will read: ${preview}`
-							: 'No label will be shown.'}
+							? t('appearance.preview', { preview })
+							: t('appearance.noLabel')}
 					</Text>
 
-					<TableRowGroup title="Behaviour" hasIcons>
+					<TableRowGroup title={t('appearance.behaviour')} hasIcons>
 						<TableSwitchRow
-							label="Skip messages already in your language"
-							subLabel="Shows a short notice instead of a pointless translation."
+							label={t('appearance.skipSame')}
+							subLabel={t('appearance.skipSameBody')}
 							icon={rowIcon('CircleCheckIcon', 'ic_check')}
 							value={!!s.skipSameLanguage}
 							onValueChange={value => set({ skipSameLanguage: value })}

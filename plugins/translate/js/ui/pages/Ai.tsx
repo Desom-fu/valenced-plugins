@@ -31,6 +31,7 @@ import { Design } from '@valenced/discord/design'
 import * as React from 'react'
 import * as ReactNative from 'react-native'
 import { DEFAULTS } from '../../defaults'
+import { t } from '../../i18n'
 import {
 	DEFAULT_PROMPT,
 	EFFORT_LABELS,
@@ -97,7 +98,7 @@ export default function Ai() {
 
 	const loadModels = async () => {
 		if (!normalizeBaseUrl(s.aiBaseUrl)) {
-			toast('Fill in the base URL first')
+			toast(t('ai.toastNeedUrl'))
 			return
 		}
 		setLoadingModels(true)
@@ -105,7 +106,8 @@ export default function Ai() {
 			const outcome = await fetchModels(config)
 			setModels(outcome.models.map(m => m.id))
 			if (outcome.error) toast(outcome.error)
-			else if (outcome.models.length) toast(`${outcome.models.length} models`)
+			else if (outcome.models.length)
+				toast(t('ai.toastModels', { count: outcome.models.length }))
 		} finally {
 			setLoadingModels(false)
 		}
@@ -136,25 +138,22 @@ export default function Ai() {
 					<Card variant="secondary" border="none">
 						<View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
 							<Text color="text-default" variant="text-md/semibold">
-								Any OpenAI-compatible endpoint
+								{t('ai.anyEndpoint')}
 							</Text>
 							<Text
 								color="text-muted"
 								variant="text-sm/normal"
 								style={{ marginTop: 8 }}
 							>
-								`/v1/chat/completions` plus `GET /v1/models`. OpenAI, DeepSeek,
-								Moonshot, Groq, Ollama, vLLM, OpenRouter and most proxies over
-								them all speak this. Your key stays on this device and is sent
-								only to the URL below.
+								{t('ai.anyEndpointBody')}
 							</Text>
 						</View>
 					</Card>
 
 					<FieldGroup
-						title="Endpoint"
-						label="Base URL"
-						description="Ends at /v1, or at the host — both work. A pasted full /v1/chat/completions is trimmed for you."
+						title={t('ai.endpoint')}
+						label={t('ai.baseUrl')}
+						description={t('ai.baseUrlBody')}
 					>
 						<TextInput
 							placeholder="https://api.openai.com/v1"
@@ -165,9 +164,9 @@ export default function Ai() {
 					</FieldGroup>
 
 					<FieldGroup
-						title="Key"
-						label="API key"
-						description="Sent as a Bearer token. Leave empty for a local server that does not need one."
+						title={t('ai.keyGroup')}
+						label={t('ai.apiKey')}
+						description={t('ai.apiKeyBody')}
 					>
 						<TextInput
 							placeholder="sk-…"
@@ -178,12 +177,12 @@ export default function Ai() {
 					</FieldGroup>
 
 					<FieldGroup
-						title="Model"
-						label="Model id"
+						title={t('ai.modelGroup')}
+						label={t('ai.modelId')}
 						description={
 							models.length
-								? `${models.length} models listed — tap one below, or type any id.`
-								: 'Load the list, or type the id your provider documents.'
+								? t('ai.modelListed', { count: models.length })
+								: t('ai.modelUnlisted')
 						}
 					>
 						<TextInput
@@ -194,7 +193,7 @@ export default function Ai() {
 						/>
 						<View style={{ marginTop: 12 }}>
 							<Button
-								text={loadingModels ? 'Loading…' : 'Load models'}
+								text={loadingModels ? t('common.loading') : t('ai.loadModels')}
 								size="sm"
 								onPress={loadModels}
 								disabled={loadingModels}
@@ -203,7 +202,7 @@ export default function Ai() {
 					</FieldGroup>
 
 					{models.length > 0 && (
-						<TableRowGroup title="Available models">
+						<TableRowGroup title={t('ai.availableModels')}>
 							<TableRadioGroup
 								key={`models|${s.aiModel}|${models.length}`}
 								defaultValue={s.aiModel}
@@ -216,7 +215,7 @@ export default function Ai() {
 						</TableRowGroup>
 					)}
 
-					<TableRowGroup title="How hard it thinks" hasIcons>
+					<TableRowGroup title={t('ai.effortGroup')} hasIcons>
 						<TableRadioGroup
 							key={`effort|${s.aiEffort}`}
 							defaultValue={s.aiEffort || 'default'}
@@ -225,7 +224,7 @@ export default function Ai() {
 							{EFFORTS.map(effort => (
 								<TableRadioRow
 									key={effort}
-									label={effort === 'default' ? 'Default (lowest)' : effort}
+									label={effort === 'default' ? t('ai.effortDefault') : effort}
 									subLabel={EFFORT_LABELS[effort]}
 									value={effort}
 								/>
@@ -234,17 +233,13 @@ export default function Ai() {
 					</TableRowGroup>
 
 					<Text color="text-muted" variant="text-sm/normal">
-						Default sends no effort field at all, which is the cheapest way to
-						get a translation and what most models expect. Anything else is
-						passed as `reasoning_effort`; a server that does not know the field
-						will say so in the test below rather than failing a real translation
-						later.
+						{t('ai.effortNote')}
 					</Text>
 
 					<FieldGroup
-						title="Prompt"
-						label="System prompt"
-						description="Empty uses the built-in one: translate faithfully, output only the translation, keep ⟦0⟧ placeholders intact."
+						title={t('ai.promptGroup')}
+						label={t('ai.systemPrompt')}
+						description={t('ai.promptBody')}
 					>
 						<TextArea
 							placeholder={DEFAULT_PROMPT.split('\n')[0]}
@@ -255,12 +250,12 @@ export default function Ai() {
 					</FieldGroup>
 
 					<FieldGroup
-						title="Connection"
-						label="Test"
-						description="Sends one short real translation through the same path a message takes."
+						title={t('ai.connection')}
+						label={t('ai.test')}
+						description={t('ai.testBody')}
 					>
 						<Button
-							text={busy ? 'Testing…' : 'Test connection'}
+							text={busy ? t('ai.testing') : t('ai.testConnection')}
 							size="sm"
 							onPress={runTest}
 							disabled={busy}
@@ -271,8 +266,7 @@ export default function Ai() {
 									color={result.ok ? 'text-default' : 'text-feedback-critical'}
 									variant="text-sm/normal"
 								>
-									{result.ok ? 'Works. ' : 'Failed. '}
-									{result.message}
+									{result.ok ? t('ai.works') : t('ai.failed')} {result.message}
 								</Text>
 								{result.reply && (
 									<Text
@@ -280,7 +274,7 @@ export default function Ai() {
 										variant="text-sm/normal"
 										style={{ marginTop: 6 }}
 									>
-										It answered: “{result.reply}”
+										{t('ai.answered', { reply: result.reply })}
 									</Text>
 								)}
 							</View>
@@ -288,9 +282,7 @@ export default function Ai() {
 					</FieldGroup>
 
 					<Text color="text-muted" variant="text-sm/normal">
-						Automatic mode never uses this. A model costs money per message, so
-						it is only asked when you pick it on the Service page — everything
-						else keeps using the free services.
+						{t('ai.note')}
 					</Text>
 				</Stack>
 			</ScrollView>
